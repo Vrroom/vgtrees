@@ -5,6 +5,7 @@
  */
 import React, { Component } from "react";
 import { coveringBBox, boxCenter } from "../utils/svg";
+import { selectColor } from "../utils/palette";
 import addStopPropagation from "../utils/eventModifier";
 
 /*
@@ -104,10 +105,13 @@ class GraphHandler extends Component {
    */
   node2Group = node => {
     const {
+      selected,
+      onClick,
       onPointerOver,
       onPointerLeave,
+      onNodeDblClick
     } = this.props;
-    const stroke = "none";
+    const stroke = selected.includes(node.id) ? selectColor : "none";
     const { scale, tx, ty } = this.nodeTransformation(
       node.paths,
       node.radius,
@@ -117,8 +121,10 @@ class GraphHandler extends Component {
     return (
       <g
         key={`vertex-${node.id}`}
+        onClick={addStopPropagation((evt) => onClick(evt, node.id))}
         onPointerOver={addStopPropagation(() => onPointerOver(node.id))}
         onPointerLeave={addStopPropagation(() => onPointerLeave(node.id))}
+        onDoubleClick={addStopPropagation((evt) => onNodeDblClick(evt, node.id))}
         opacity={node.visible}
         pointerEvents={node.visible === 1 ? "auto" : "none"}
       >

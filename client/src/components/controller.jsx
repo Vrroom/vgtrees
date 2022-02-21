@@ -11,7 +11,9 @@ import { cloneDeep } from "lodash";
 import {
   createEmptyGraph,
   isRoot,
-  findRoot
+  findRoot,
+  updateVisualProperties,
+  groupNodes,
 } from "../utils/graph";
 import { nodeColors } from "../utils/palette";
 import * as d3 from "d3";
@@ -35,18 +37,38 @@ class Controller extends Component {
       graphic,
       graph,
       hover: [],
-      filename: '',
+      selected: [],
+      filename: "",
     };
-    // d3-force's simulation object for calculating 
+    // d3-force's simulation object for calculating
     // the graph layout and because it looks cool.
     this.sim = d3.forceSimulation();
   }
 
-  setGraphState = graph => {
+  setGraphState = (graph) => {
     this.setState({ graph: graph });
   };
 
-  componentDidMount() { this.getNewSVGFromDB(); }
+  /*
+   * When the component mounts, add an event listener for
+   * click. Any click which isn't caught by a child element
+   * of window will be caught here and whatever has been
+   * selected by the user would be cleared
+   *
+   * Also fetch a new graphic from the database.
+   */
+  componentDidMount() {
+    window.addEventListener("click", this.handleClear);
+    this.getNewSVGFromDB();
+  }
+
+  /*
+   * When the component unmounts, remove the click
+   * event listener.
+   */
+  componentWillUnmount() {
+    window.removeEventListener("click", this.handleClear);
+  }
 
   setStateWithNewSVG = (svgString, filename) => {
     const graphic = preprocessSVG(svgString);
@@ -55,6 +77,7 @@ class Controller extends Component {
       graphic,
       graph: graph,
       hover: [],
+      selected: [],
       filename,
     });
     this.updateSimulation(graph);
@@ -67,8 +90,8 @@ class Controller extends Component {
    */
   getNewSVGFromDB = () => {
     fetch("/task")
-      .then(res => res.json())
-      .then(item => {
+      .then((res) => res.json())
+      .then((item) => {
         const { svg, filename } = item;
         this.setStateWithNewSVG(svg, filename);
       });
@@ -103,7 +126,7 @@ class Controller extends Component {
     const height = 100;
     const copy = cloneDeep(graph);
     const rootNodes = copy.nodes.filter(
-      node => typeof node.parent === "undefined"
+      (node) => typeof node.parent === "undefined"
     );
     this.sim
       .alpha(alpha)
@@ -111,21 +134,50 @@ class Controller extends Component {
       .nodes(rootNodes)
       .force(
         "collide",
-        d3.forceCollide().radius(node => (node.radius + 1) * node.visible)
+        d3.forceCollide().radius((node) => (node.radius + 1) * node.visible)
       )
       .force(
         "charge",
-        d3.forceManyBody().strength(node => -5 * node.visible)
+        d3.forceManyBody().strength((node) => -5 * node.visible)
       )
       .force(
         "boxforce",
-        boxforce(node => node.radius, width, height)
+        boxforce((node) => node.radius, width, height)
       )
       .force("forceX", d3.forceX(width / 2).strength(0.1))
       .force("forceY", d3.forceY(height / 2).strength(0.1))
       .on("tick", () => {
         this.setGraphState(copy, false);
       });
+  };
+
+  /*
+   * Handle Click event on a particular node.
+   *
+   * Whenever a click event occurs in either the svg handler or
+   * the graph handler, this function is called. By clicking on
+   * nodes, they either get selected/de-selected according to
+   * whether they were de-selected or selected earlier.
+   *
+   * A node cannot be selected if it's ancestor or descendent is
+   * already selected.
+   *
+   * @param   {Number}  id - Id of the node on which
+   * the event was fired.
+   */
+  handleClick = (event, id) => {
+    const selected = cloneDeep(this.state.selected);
+    const graph = this.state.graph;
+    id = findRoot(id, graph);
+    const isSelected = selected.includes(id);
+    // Toggle on the basis of whether the node
+    // was already selected or not.
+    if (isSelected) {
+      selected.splice(selected.indexOf(id), 1);
+    } else {
+      selected.push(id);
+    }
+    this.setState({ selected });
   };
 
   /*
@@ -138,7 +190,7 @@ class Controller extends Component {
    *
    * @param   {Number}  id - Id of the node.
    */
-  handlePointerOver = id => {
+  handlePointerOver = (id) => {
     const graph = this.state.graph;
     id = findRoot(id, graph);
     if (!isRoot(id, graph)) {
@@ -151,7 +203,7 @@ class Controller extends Component {
       const hover = [id];
       this.setState({ hover });
     } else {
-      const hover = node.children.map(i => graph.nodes[i].paths).flat();
+      const hover = node.children.map((i) => graph.nodes[i].paths).flat();
       this.setState({ hover });
     }
   };
@@ -161,7 +213,7 @@ class Controller extends Component {
    *
    * @param   {Number}  id - Id of the node.
    */
-  handlePointerLeave = id => {
+  handlePointerLeave = (id) => {
     const graph = this.state.graph;
     id = findRoot(id, graph);
     let node = graph.nodes[id];
@@ -169,35 +221,81 @@ class Controller extends Component {
     this.setState({ hover: [] });
   };
 
-  handleAcceptClick = event => {
-    fetch("/accept", {
-      method: "post",
-      headers: {
-        Accept: "application/json, text/plain, */*",
-        "Content-Type": "application/json"
-      },
-      body: JSON.stringify({
-        filename: this.state.filename,
-        status: 'accept'
-      })
-    })
-    this.getNewSVGFromDB();
-  }
+  /*
+   * Burst the bubble and undo the grouping.
+   *
+   * @param   {Number}  id - Id of the node.
+   */
+  handleNodeDblClick = (event, id) => {
+    this.setState({ selected: [] });
+    let graph = cloneDeep(this.state.graph);
+    if (graph.nodes[id].type === "path") {
+      return;
+    }
+    let children = graph.nodes[id].children;
+    for (let i = 0; i < children.length; i++) {
+      const childId = children[i];
+      graph.nodes[childId].parent = undefined;
+    }
+    graph.links = graph.links.filter(
+      (link) => !(link.source === id || link.target === id)
+    );
+    const idMap = {};
+    graph.nodes = graph.nodes.filter((node) => node.id !== id);
+    graph.nodes.forEach((node, i) => (idMap[node.id] = i));
+    for (let i = 0; i < graph.nodes.length; i++) {
+      let node = graph.nodes[i];
+      node.id = idMap[node.id];
+      if (!isRoot(node.id, graph)) node.parent = idMap[node.parent];
+      for (let j = 0; j < node.children.length; j++) {
+        node.children[j] = idMap[node.children[j]];
+      }
+    }
+    for (let i = 0; i < graph.links.length; i++) {
+      let link = graph.links[i];
+      link.source = idMap[link.source];
+      link.target = idMap[link.target];
+    }
+    graph = updateVisualProperties(graph, this.state.graphic);
+    this.updateSimulation(graph);
+  };
 
-  handleRejectClick = event => {
-    fetch("/accept", {
-      method: "post",
-      headers: {
-        Accept: "application/json, text/plain, */*",
-        "Content-Type": "application/json"
-      },
-      body: JSON.stringify({
-        filename: this.state.filename,
-        status: 'reject'
-      })
-    })
+  /*
+   * Handle click on the group button.
+   *
+   * Check whether the selected nodes are
+   * mergeable. Create a new node representing
+   * the merge if this is the case.
+   */
+  handleGroupClick = (event) => {
+    const selected = [...this.state.selected];
+    const graph = updateVisualProperties(
+      groupNodes(this.state.graph, selected),
+      this.state.graphic
+    );
+    this.updateSimulation(graph);
+  };
+
+  handleAcceptClick = (event) => {
     this.getNewSVGFromDB();
-  }
+  };
+
+  /*
+   * Clear the selections.
+   *
+   * Whenever any useless part of the window
+   * is clicked, de-select all the selected paths.
+   * This is what happens in a lot of graphics
+   * editors.
+   */
+  handleClear = (event) => {
+    const selected = [];
+    this.setState({ selected });
+  };
+
+  handleRejectClick = (event) => {
+    this.getNewSVGFromDB();
+  };
 
   render() {
     return (
@@ -209,6 +307,7 @@ class Controller extends Component {
               graph={this.state.graph}
               selected={this.state.selected}
               hover={this.state.hover}
+              onClick={this.handleClick}
               onPointerOver={this.handlePointerOver}
               onPointerLeave={this.handlePointerLeave}
             />
@@ -218,13 +317,17 @@ class Controller extends Component {
               graphic={this.state.graphic}
               docId={this.state.id}
               graph={this.state.graph}
+              selected={this.state.selected}
+              onClick={this.handleClick}
               onPointerOver={this.handlePointerOver}
               onPointerLeave={this.handlePointerLeave}
+              onNodeDblClick={this.handleNodeDblClick}
             />
           </Col>
         </Row>
         <Buttons
           clickAccept={this.handleAcceptClick}
+          clickGroup={this.handleGroupClick}
           clickReject={this.handleRejectClick}
         ></Buttons>
       </Container>

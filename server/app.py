@@ -9,6 +9,7 @@ from vectorrvnn.data import *
 import sys
 import svgpathtools as svg
 import pandas as pd
+import requests
 
 def rootdir():  
     return osp.abspath(osp.dirname(__file__))
@@ -18,6 +19,9 @@ app = Flask(__name__, static_url_path='', static_folder='../client/build')
 SESSION_TYPE = 'filesystem'
 app.config.from_object(__name__)
 Session(app)
+
+CAPTCHA_VERIFY = 'https://www.google.com/recaptcha/api/siteverify'
+CAPTCHA_SECRET = '6LezYj4eAAAAABSLfUxNKa-x_0XhyJ8ZdL0rYds-'
 
 svgs = None
 id = 0
@@ -41,6 +45,18 @@ def task () :
         content = fd.read()
     return jsonify(svg=content, filename=svgFile)
 
+@app.route('/validate', methods=['POST', 'GET'])
+def validate () : 
+    token = request.json['captchaValue']
+    email = request.json['email']
+    turkid = request.json['turkid']
+    payload = {
+        "secret": CAPTCHA_SECRET,
+        "response": token
+    }
+    resp = requests.post(CAPTCHA_VERIFY, data=payload).json()
+    return jsonify(success=resp['success'])
+
 @app.route('/accept', methods=['POST', 'GET'])
 def accept () : 
     filename = request.json['filename']
@@ -61,5 +77,5 @@ if __name__ == '__main__':
         lambda x : x.endswith('svg'), 
         allfiles(datadir)
     ))
-    app.run(host='0.0.0.0', port=5000)
+    app.run(host='0.0.0.0', port=80)
 
