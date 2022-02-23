@@ -10,6 +10,7 @@ function rgb2string(rgb, a) {
 }
 
 const selectColor = [187, 225, 250];
+const highlightColor = [231, 48, 91];
 
 const nodeColors = {
   mergeAllowed: [155, 222, 172],
@@ -20,4 +21,4 @@ const nodeColors = {
   hover: [144, 136, 212]
 };
 
-export { selectColor, nodeColors, rgb2string };
+export { selectColor, highlightColor, nodeColors, rgb2string };

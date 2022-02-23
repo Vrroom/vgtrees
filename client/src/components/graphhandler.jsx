@@ -5,7 +5,7 @@
  */
 import React, { Component } from "react";
 import { coveringBBox, boxCenter } from "../utils/svg";
-import { selectColor, rgb2string } from "../utils/palette";
+import { selectColor, highlightColor, rgb2string } from "../utils/palette";
 import { isUndef } from "../utils/misc.js";
 import addStopPropagation from "../utils/eventModifier";
 import alphaBlink from "../utils/math.js";
@@ -18,7 +18,7 @@ function getStroke (nodeId, selected, highlight, t) {
   if (selected.includes(nodeId)) {
     return rgb2string(selectColor, 1); 
   } else if (validHighlight(highlight) && highlight.includes(nodeId)) {
-    return rgb2string(selectColor, alphaBlink(t)); 
+    return rgb2string(highlightColor, alphaBlink(t)); 
   } else {
     return "none";
   }

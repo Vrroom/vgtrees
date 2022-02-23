@@ -17,6 +17,7 @@ import { nodeColors } from "../utils/palette";
 import * as d3 from "d3";
 import { ReactComponent as Group } from "../icons/group.svg";
 import IconButton from "./iconbutton";
+import { isUndef } from "../utils/misc"; 
 
 class GroupUI extends Component {
   /*
@@ -39,6 +40,9 @@ class GroupUI extends Component {
       hover: [],
       selected: [],
       filename: "",
+      highlightGroup: false,
+      highlightSvg: [], 
+      highlightGraph: [], 
     };
     // d3-force's simulation object for calculating
     // the graph layout and because it looks cool.
@@ -81,6 +85,7 @@ class GroupUI extends Component {
       filename,
     });
     this.updateSimulation(graph);
+    this.tryNotifyParent({ type: "new-svg", graph });
   };
 
   /*
@@ -152,6 +157,13 @@ class GroupUI extends Component {
       });
   };
 
+  tryNotifyParent = (msg) => {
+    const { notifyParent } = this.props;
+    if (!isUndef(notifyParent)) {
+      notifyParent(msg);
+    }
+  }
+
   /*
    * Handle Click event on a particular node.
    *
@@ -178,6 +190,7 @@ class GroupUI extends Component {
       selected.push(id);
     }
     this.setState({ selected });
+    this.tryNotifyParent({ type: "select", selected });
   };
 
   /*
@@ -191,7 +204,6 @@ class GroupUI extends Component {
    * @param   {Number}  id - Id of the node.
    */
   handlePointerOver = (id) => {
-    console.log(id);
     const graph = this.state.graph;
     id = findRoot(id, graph);
     if (!isRoot(id, graph)) {
@@ -215,7 +227,6 @@ class GroupUI extends Component {
    * @param   {Number}  id - Id of the node.
    */
   handlePointerLeave = (id) => {
-    console.log('asd', id);
     const graph = this.state.graph;
     id = findRoot(id, graph);
     let node = graph.nodes[id];
@@ -260,6 +271,7 @@ class GroupUI extends Component {
     }
     graph = updateVisualProperties(graph, this.state.graphic);
     this.updateSimulation(graph);
+    this.tryNotifyParent({ type: "group-undo" });
   };
 
   /*
@@ -276,6 +288,7 @@ class GroupUI extends Component {
       this.state.graphic
     );
     this.updateSimulation(graph);
+    this.tryNotifyParent({ type: "group", selected });
   };
 
   /*
@@ -289,6 +302,7 @@ class GroupUI extends Component {
   handleClear = (event) => {
     const selected = [];
     this.setState({ selected });
+    this.tryNotifyParent({ type: "clear" }); 
   };
 
   render() {
@@ -304,7 +318,7 @@ class GroupUI extends Component {
               onClick={this.handleClick}
               onPointerOver={this.handlePointerOver}
               onPointerLeave={this.handlePointerLeave}
-              highlight={[10]}
+              highlight={this.state.highlightSvg}
             />
           </Col>
           <Col className="d-flex justify-content-center">
@@ -317,7 +331,7 @@ class GroupUI extends Component {
               onPointerOver={this.handlePointerOver}
               onPointerLeave={this.handlePointerLeave}
               onNodeDblClick={this.handleNodeDblClick}
-              highlight={[10]}
+              highlight={this.state.highlightGraph}
             />
           </Col>
         </Row>
@@ -327,7 +341,7 @@ class GroupUI extends Component {
               name="Group"
               active={true}
               onClick={this.handleGroupClick}
-              highlight={true}
+              highlight={this.state.highlightGroup}
             >
               <Group />
             </IconButton>

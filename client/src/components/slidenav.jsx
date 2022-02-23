@@ -9,7 +9,7 @@ import { ReactComponent as RightArrow } from "../icons/rightarrow.svg";
 class SlideNav extends Component {
 
   render() {
-    const { nSlides, slideId, onPrev, onNext, highlight } = this.props; 
+    const { nSlides, slideId, onPrev, onNext, highlightPrev, highlightNext } = this.props; 
     const pct = (100 * (slideId + 1) / nSlides);
     return (
       <Row className="py-3 justify-content-center"> 
@@ -18,7 +18,7 @@ class SlideNav extends Component {
             name="Previous"
             active={slideId > 0}
             onClick={onPrev}
-            highlight={highlight}
+            highlight={highlightPrev}
           >
             <LeftArrow />
           </IconButton>
@@ -31,7 +31,7 @@ class SlideNav extends Component {
             name="Next"
             active={slideId + 1 < nSlides}
             onClick={onNext}
-            highlight={highlight}
+            highlight={highlightNext}
           >
             <RightArrow />
           </IconButton>

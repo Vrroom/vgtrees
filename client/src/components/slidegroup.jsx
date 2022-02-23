@@ -8,7 +8,7 @@ class SlideGroup extends Component {
 
   constructor (props) {
     super(props);
-    this.state = { slideId: 0, highlight: false };
+    this.state = { slideId: 0, highlightPrev: false, highlightNext: false };
   }
 
   componentDidMount() {
@@ -43,12 +43,12 @@ class SlideGroup extends Component {
   };
 
   setHighlight = (val) => {
-    this.setState({ highlight: val }); 
+    this.setState({ highlightNext: val }); 
   }
 
   render() {
     const { children } = this.props;
-    const { slideId, highlight } = this.state;
+    const { slideId, highlightPrev, highlightNext } = this.state;
     return (
       <Container id="app-container" className="">
         <Row className="slide-content "> 
@@ -60,7 +60,8 @@ class SlideGroup extends Component {
             onNext={this.onNext}
             nSlides={children.length}
             slideId={slideId}
-            highlight={highlight}
+            highlightPrev={highlightPrev}
+            highlightNext={highlightNext}
           />
         </Row>
       </Container>

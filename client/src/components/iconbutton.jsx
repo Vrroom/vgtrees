@@ -4,9 +4,10 @@ import OverlayTrigger from "react-bootstrap/OverlayTrigger";
 import Col from "react-bootstrap/Col";
 import Row from "react-bootstrap/Row";
 import Button from "react-bootstrap/Button";
-import { selectColor, rgb2string } from "../utils/palette";
+import { highlightColor, rgb2string } from "../utils/palette";
 import { isUndef } from "../utils/misc.js";
 import alphaBlink from "../utils/math";
+
 class IconButton extends Component {
 
   constructor (props) {
@@ -26,11 +27,6 @@ class IconButton extends Component {
     }); 
   }
 
-  onClick = (evt) => {
-    this.setState({ show: true });
-    this.props.onClick(evt);
-  };
-
   componentDidUpdate (prevProps) {
     if (prevProps.highlight !== this.props.highlight) {
       if (this.props.highlight) {
@@ -42,11 +38,11 @@ class IconButton extends Component {
   }
 
   render() {
-    const { active, children, highlight } = this.props;
+    const { active, children, highlight, onClick } = this.props;
     const style = {}; 
     if (highlight) {
       const alpha = alphaBlink(this.state.x);
-      const color = rgb2string(selectColor, alpha);
+      const color = rgb2string(highlightColor, alpha);
       style['boxShadow'] = `0 0 0 .6rem ${color}`;
     }
     return (
@@ -58,7 +54,7 @@ class IconButton extends Component {
             overlay={<Tooltip>{this.props.name}</Tooltip>}
           >
             <div className={active ? "visible" : "invisible"}>
-              <Button variant="light" style={style} onClick={this.onClick}> {children} </Button>
+              <Button variant="light" style={style} onClick={onClick}> {children} </Button>
             </div>
           </OverlayTrigger> 
         </Col>
