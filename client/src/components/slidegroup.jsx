@@ -1,16 +1,14 @@
 import React, { Component } from "react";
-import IconButton from "./iconbutton";
 import SlideNav from "./slidenav";
 import Row from "react-bootstrap/Row";
-import Col from "react-bootstrap/Col";
 import Container from "react-bootstrap/Container";
-import { ReactComponent as ContactUs } from "../icons/contact.svg";
+import PageTransition from "./transition"; 
 
 class SlideGroup extends Component {
 
   constructor (props) {
     super(props);
-    this.state = { slideId: 0 };
+    this.state = { slideId: 0, highlight: false };
   }
 
   componentDidMount() {
@@ -44,41 +42,26 @@ class SlideGroup extends Component {
     }
   };
 
-  sendEmail = () => {
-    window.open(
-      "mailto:sumit.chaturvedi@gmail.com?subject=VGTrees Annotation App"
-    );
-  };
+  setHighlight = (val) => {
+    this.setState({ highlight: val }); 
+  }
 
   render() {
-    const { titles, children } = this.props;
-    const { slideId } = this.state;
+    const { children } = this.props;
+    const { slideId, highlight } = this.state;
     return (
-      <Container id="app-container" className="p-3">
-        <Row className="justify-content-center">
-          <Col className="text-center"> <h1>Sumit</h1> </Col>
-        </Row>
-        <Row className="slide-content"> 
-        {children[slideId]}
+      <Container id="app-container" className="">
+        <Row className="slide-content "> 
+          <PageTransition page={slideId} children={children} setHighlight={this.setHighlight} /> 
         </Row> 
-        <Row className="mt-auto"> 
+        <Row className="border-top mt-3"> 
           <SlideNav 
             onPrev={this.onPrev}
             onNext={this.onNext}
             nSlides={children.length}
             slideId={slideId}
+            highlight={highlight}
           />
-          <Row className="p-3"> 
-            <Col> 
-              <IconButton
-                name="Contact Us"
-                active={true}
-                onClick={this.sendEmail}
-              >
-                <ContactUs />
-              </IconButton>
-            </Col>
-          </Row>
         </Row>
       </Container>
     );

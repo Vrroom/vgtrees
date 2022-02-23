@@ -1,0 +1,27 @@
+.modal-body {
+  min-height: 50vh;
+  max-height: 50vh;
+}
+
+.slide-content {
+  min-height: 60vh;
+}
+
+#svg-element, #svg-graph-element {
+  width: 100%;
+  height: auto;
+}
+
+#bbox-group{
+  pointer-events: none;
+}
+
+#cover-element {
+  pointer-events: none;
+}
+
+@media (min-width: 1200px) {
+  .container{
+      max-width: 970px;
+  }
+}

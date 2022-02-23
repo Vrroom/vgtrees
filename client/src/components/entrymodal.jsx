@@ -6,7 +6,7 @@ import Container from "react-bootstrap/Container";
 import Button from "react-bootstrap/Button";
 import ConsentForm from "./consentform";
 import TurkerForm from "./turkerform";
-import Transition from "./transition";
+import PageTransition from "./transition";
 import postData from "../utils/post";
 
 class EntryModal extends Component {
@@ -84,15 +84,13 @@ class EntryModal extends Component {
           id="informed-consent"
           onScroll={this.onScroll}
         >
-          <Transition show={page === 0}>
+          <PageTransition page={page}>
             <ConsentForm />
-          </Transition>
-          <Transition show={page === 1}>
             <TurkerForm
               validated={validated}
               onCaptchaChange={this.handleCaptchaChange}
             />
-          </Transition>
+          </PageTransition>
         </Modal.Body>
         <Modal.Footer>
           <Button disabled={!allowNext} onClick={this.handleNext}>

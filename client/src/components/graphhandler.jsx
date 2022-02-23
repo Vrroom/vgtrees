@@ -5,31 +5,58 @@
  */
 import React, { Component } from "react";
 import { coveringBBox, boxCenter } from "../utils/svg";
-import { selectColor } from "../utils/palette";
+import { selectColor, rgb2string } from "../utils/palette";
+import { isUndef } from "../utils/misc.js";
 import addStopPropagation from "../utils/eventModifier";
+import alphaBlink from "../utils/math.js";
+
+function validHighlight (hl) {
+  return !isUndef(hl) && hl.length > 0; 
+}
+  
+function getStroke (nodeId, selected, highlight, t) {
+  if (selected.includes(nodeId)) {
+    return rgb2string(selectColor, 1); 
+  } else if (validHighlight(highlight) && highlight.includes(nodeId)) {
+    return rgb2string(selectColor, alphaBlink(t)); 
+  } else {
+    return "none";
+  }
+}
 
 /*
- * Controls how the graph is being displayed to the
- * user based on their interactions.
+ * Controls how the graph is being displayed to the user based on their interactions.
  *
- * The graph is essentially a tree. Based on user
- * interactions, new nodes and links are added.
+ * The graph is essentially a tree. Based on user interactions, new nodes and links are added.
  *
- * These new nodes represent groups and the links
- * represent parent-child relations.
+ * These new nodes represent groups and the links represent parent-child relations.
  *
  * Links can be deleted by double clicking on them.
  *
- * Nodes can be drag and dropped. For example, dragging
- * and dropping a single path node on a group node will
- * add the single path to the group.
+ * Nodes can be drag and dropped. For example, dragging and dropping a single path node on 
+ * a group node will add the single path to the group.
  *
- * Paths or groups can also be selected by clicking on
- * nodes.
- *
- * @extends Component
+ * Paths or groups can also be selected by clicking on nodes.
  */
 class GraphHandler extends Component {
+  
+  constructor (props) {
+    super(props);
+    this.state = {
+      x: 0,
+    };
+    if (validHighlight(props.highlight)) {
+      setInterval(this.increment, 40);
+    }
+  }
+
+  increment = () => {
+    this.setState((prevState) => {
+      const { x } = prevState;
+      return { x: x + 1 };
+    }); 
+  }
+
   /*
    * Create React Elements for a subset of paths of the SVG.
    *
@@ -57,17 +84,23 @@ class GraphHandler extends Component {
     });
   };
 
+  componentDidUpdate (prevProps) {
+    const { highlight } = this.props;
+    if (!validHighlight(prevProps.highlight) && validHighlight(highlight)) {
+      this.counter = setInterval(this.increment, 40);
+    } else if (validHighlight(prevProps.highlight) && !validHighlight(highlight)) {
+      clearInterval(this.increment, 40);
+    }
+  }
+
   /*
    * Find the node transformation.
    *
-   * The node transformation depends on the
-   * area occupied by the paths in it, it's radius
-   * and it's x and y position.
+   * The node transformation depends on the area occupied by the paths in it, 
+   * it's radius and it's x and y position.
    *
-   * This function is used for calculating
-   * transformations while displaying the
-   * nodes in the graph as well as the
-   * suggestion nodes.
+   * This function is used for calculating transformations while displaying the
+   * nodes in the graph as well as the suggestion nodes.
    *
    * @param   {Array}   paths - List of path indices.
    * @param   {Number}  radius - Node radius.
@@ -85,18 +118,15 @@ class GraphHandler extends Component {
     const ty = y - cy;
     return { scale, tx, ty };
   };
-
+  
   /*
-   * Helper function for getVertices to convert graph
-   * nodes into SVG Group Elements.
+   * Helper function for getVertices to convert graph nodes into SVG Group Elements.
    *
-   * Each node in the graph is represented by the
-   * subset of paths within it. These paths need to
-   * be displayed within these nodes.
+   * Each node in the graph is represented by the subset of paths within it. 
+   * These paths need to be displayed within these nodes.
    *
-   * This function determines the size of the nodes and
-   * calculates the transformation for the path subset
-   * so that it can be displayed within the nodes.
+   * This function determines the size of the nodes and calculates the transformation 
+   * for the path subset so that it can be displayed within the nodes.
    *
    * @param   {Object}  node - Contains the id of the node,
    * it's radius, it's x and y coordinates, it's radius and fill.
@@ -109,9 +139,10 @@ class GraphHandler extends Component {
       onClick,
       onPointerOver,
       onPointerLeave,
-      onNodeDblClick
+      onNodeDblClick,
+      highlight
     } = this.props;
-    const stroke = selected.includes(node.id) ? selectColor : "none";
+    const stroke = getStroke(node.id, selected, highlight, this.state.x); 
     const { scale, tx, ty } = this.nodeTransformation(
       node.paths,
       node.radius,
@@ -133,7 +164,7 @@ class GraphHandler extends Component {
           cx={node.x}
           cy={node.y}
           r={node.radius}
-          fill={node.fill}
+          fill={rgb2string(node.fill, 1)}
           stroke={stroke}
           strokeWidth="2"
         />

@@ -1,19 +1,23 @@
-import React from "react";
-import { CSSTransition } from "react-transition-group";
+import React, { cloneElement } from "react";
+import { SwitchTransition, CSSTransition } from "react-transition-group";
 
 import "../css/transition.css";
 
-function Transition (props) {
+function PageTransition (props) {
+  const { children, page, ...rest } = props;
   return (
+    <SwitchTransition mode="out-in">
       <CSSTransition
-        in={props.show}
-        timeout={300}
+        key={page}
+        addEndListener={(node, done) => {
+          node.addEventListener("transitionend", done, false);
+        }}
         classNames="transition"
-        unmountOnExit
       >
-        {props.children}
+        {cloneElement(children[page], rest)}
       </CSSTransition>
+    </SwitchTransition>
   );
 }
 
-export default Transition;
+export default PageTransition;

@@ -1,14 +1,25 @@
 import React, { Component } from "react";
-import Controller from "./components/controller";
 import EntryModal from "./components/entrymodal";
 import SlideGroup from "./components/slidegroup";
+import Intro from "./components/intro";
+import Tutorial from "./components/tutorial";
+import Nav from "./components/nav";
 import postData from "./utils/post";
+
+const titles = [
+  "Group Similar Items",
+  "A",
+  "B",
+  "C", 
+  "D",
+  "E"
+];
 
 class App extends Component {
   constructor(props) {
     super(props);
     this.state = {
-      showSlides: false,
+      showSlides: true,
     };
   }
 
@@ -28,14 +39,18 @@ class App extends Component {
     const { showSlides } = this.state;
     if (showSlides) {
       return (
-        <SlideGroup>
-          <h1>Hello</h1>
-          <h2>Welcome</h2>
-          <h1>To</h1>
-          <h2>This</h2>
-          <h2>User</h2>
-          <h4>Study</h4>
-        </SlideGroup>
+        <>
+          <Nav />
+          <SlideGroup titles={titles}>
+            <Intro />
+            <Tutorial /> 
+            <h2>Welcome</h2>
+            <h1>To</h1>
+            <h2>This</h2>
+            <h2>User</h2>
+            <h4>Study</h4>
+          </SlideGroup>
+        </>
       );
     } else {
       return <EntryModal completeEntry={this.completeEntry} />;

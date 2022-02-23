@@ -1,10 +1,8 @@
 import React, { Component } from "react";
 import Row from "react-bootstrap/Row";
 import Col from "react-bootstrap/Col";
-import Container from "react-bootstrap/Container";
 import SVGHandler from "./svghandler";
 import GraphHandler from "./graphhandler";
-import Buttons from "./buttons";
 import { preprocessSVG } from "../utils/svg";
 import { boxforce } from "../utils/boxforce";
 import { cloneDeep } from "lodash";
@@ -17,8 +15,10 @@ import {
 } from "../utils/graph";
 import { nodeColors } from "../utils/palette";
 import * as d3 from "d3";
+import { ReactComponent as Group } from "../icons/group.svg";
+import IconButton from "./iconbutton";
 
-class Controller extends Component {
+class GroupUI extends Component {
   /*
    * Set the initial state of the component.
    *
@@ -89,7 +89,8 @@ class Controller extends Component {
    * with this SVG string and id.
    */
   getNewSVGFromDB = () => {
-    fetch("/task")
+    const { src } = this.props;
+    fetch(src)
       .then((res) => res.json())
       .then((item) => {
         const { svg, filename } = item;
@@ -170,8 +171,7 @@ class Controller extends Component {
     const graph = this.state.graph;
     id = findRoot(id, graph);
     const isSelected = selected.includes(id);
-    // Toggle on the basis of whether the node
-    // was already selected or not.
+    // Toggle on the basis of whether the node was already selected or not.
     if (isSelected) {
       selected.splice(selected.indexOf(id), 1);
     } else {
@@ -191,6 +191,7 @@ class Controller extends Component {
    * @param   {Number}  id - Id of the node.
    */
   handlePointerOver = (id) => {
+    console.log(id);
     const graph = this.state.graph;
     id = findRoot(id, graph);
     if (!isRoot(id, graph)) {
@@ -214,6 +215,7 @@ class Controller extends Component {
    * @param   {Number}  id - Id of the node.
    */
   handlePointerLeave = (id) => {
+    console.log('asd', id);
     const graph = this.state.graph;
     id = findRoot(id, graph);
     let node = graph.nodes[id];
@@ -276,10 +278,6 @@ class Controller extends Component {
     this.updateSimulation(graph);
   };
 
-  handleAcceptClick = (event) => {
-    this.getNewSVGFromDB();
-  };
-
   /*
    * Clear the selections.
    *
@@ -293,15 +291,11 @@ class Controller extends Component {
     this.setState({ selected });
   };
 
-  handleRejectClick = (event) => {
-    this.getNewSVGFromDB();
-  };
-
   render() {
     return (
-      <Container>
+      <>
         <Row>
-          <Col>
+          <Col className="d-flex justify-content-center">
             <SVGHandler
               graphic={this.state.graphic}
               graph={this.state.graph}
@@ -310,9 +304,10 @@ class Controller extends Component {
               onClick={this.handleClick}
               onPointerOver={this.handlePointerOver}
               onPointerLeave={this.handlePointerLeave}
+              highlight={[10]}
             />
           </Col>
-          <Col>
+          <Col className="d-flex justify-content-center">
             <GraphHandler
               graphic={this.state.graphic}
               docId={this.state.id}
@@ -322,17 +317,25 @@ class Controller extends Component {
               onPointerOver={this.handlePointerOver}
               onPointerLeave={this.handlePointerLeave}
               onNodeDblClick={this.handleNodeDblClick}
+              highlight={[10]}
             />
           </Col>
         </Row>
-        <Buttons
-          clickAccept={this.handleAcceptClick}
-          clickGroup={this.handleGroupClick}
-          clickReject={this.handleRejectClick}
-        ></Buttons>
-      </Container>
+        <Row> 
+          <Col> 
+            <IconButton
+              name="Group"
+              active={true}
+              onClick={this.handleGroupClick}
+              highlight={true}
+            >
+              <Group />
+            </IconButton>
+          </Col>
+        </Row>
+      </>
     );
   }
 }
 
-export default Controller;
+export default GroupUI;
