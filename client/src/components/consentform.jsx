@@ -11,6 +11,7 @@ function ConsentForm(props) {
           <p className="lead">
             You are being asked to participate in a study on visual perception.
           </p>
+          <p> Estimated time: 20 min</p> 
           <h4>Purpose</h4>
           <p>
             This study aims to understand how humans recognize parts in images,

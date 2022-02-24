@@ -1,7 +1,7 @@
 import React, { Component } from "react";
 import Col from "react-bootstrap/Col";
 import Row from "react-bootstrap/Row";
-import ProgressBar from "react-bootstrap/ProgressBar"
+import ProgressBar from "react-bootstrap/ProgressBar";
 import IconButton from "./iconbutton";
 import { ReactComponent as LeftArrow } from "../icons/leftarrow.svg";
 import { ReactComponent as RightArrow } from "../icons/rightarrow.svg";
@@ -27,14 +27,24 @@ class SlideNav extends Component {
           <ProgressBar variant="success" now={pct} />
         </Col>
         <Col> 
-          <IconButton
-            name="Next"
-            active={slideId + 1 < nSlides}
-            onClick={onNext}
-            highlight={highlightNext}
-          >
-            <RightArrow />
-          </IconButton>
+          {slideId + 1 < nSlides ? 
+            <IconButton
+              name="Next"
+              active={slideId + 1 < nSlides}
+              onClick={onNext}
+              highlight={highlightNext}
+            >
+              <RightArrow />
+            </IconButton> 
+            : 
+            <IconButton
+              name="Submit"
+              active={slideId + 1 === nSlides}
+              variant="primary"
+              onClick={() => {}}
+            >
+              Submit
+            </IconButton>}
         </Col>
       </Row>
     );

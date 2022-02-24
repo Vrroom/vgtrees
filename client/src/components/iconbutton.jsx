@@ -39,6 +39,10 @@ class IconButton extends Component {
 
   render() {
     const { active, children, highlight, onClick } = this.props;
+    let { variant } = this.props; 
+    if (isUndef(variant)) {
+      variant = "light";
+    }
     const style = {}; 
     if (highlight) {
       const alpha = alphaBlink(this.state.x);
@@ -54,7 +58,7 @@ class IconButton extends Component {
             overlay={<Tooltip>{this.props.name}</Tooltip>}
           >
             <div className={active ? "visible" : "invisible"}>
-              <Button variant="light" style={style} onClick={onClick}> {children} </Button>
+              <Button variant={variant} style={style} onClick={onClick}> {children} </Button>
             </div>
           </OverlayTrigger> 
         </Col>

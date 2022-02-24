@@ -3,7 +3,6 @@ import Col from "react-bootstrap/Col";
 import Row from "react-bootstrap/Row";
 import PageTransition from "./transition"; 
 import GroupUI from "./groupui"; 
-import h4 from "./blinktext"; 
 import Emoji from "./emoji"; 
 import { identical } from "../utils/listOps"; 
 
@@ -15,16 +14,19 @@ class Tutorial extends Component {
       messageId: 0
     }; 
     this.ref = React.createRef(); 
+    this.callbacks = [];
   }
 
   chainMessages = (ids) => {
     if (ids.length === 0) {
       return;
     }
-    setTimeout(() => {
-      this.setMessage(ids[0]);
-      this.chainMessages(ids.slice(1)); 
-    }, 2500);
+    this.callbacks.push(
+      setTimeout(() => {
+        this.setMessage(ids[0]);
+        this.chainMessages(ids.slice(1)); 
+      }, 2500)
+    ); 
   }
 
   setMessage = (id) => {
@@ -37,10 +39,11 @@ class Tutorial extends Component {
       let { current } = this.ref;
       if (messageId === 0) {
         if (msg.type === "new-svg") {
-          setTimeout(() => {
-            current.setState({ highlightSvg: [3] }); 
-            this.setMessage(1);
-          }, 2500); 
+          this.callbacks.push(
+            setTimeout(() => {
+              current.setState({ highlightSvg: [3] }); 
+              this.setMessage(1);
+            }, 2500)); 
         }
       } else if (messageId === 1) {
         if (msg.type === "select" && identical(msg.selected, [3])) {
@@ -100,12 +103,15 @@ class Tutorial extends Component {
   componentWillUnmount () { 
     const { setHighlight } = this.props;
     setHighlight(false);
+    for (let i = 0; i < this.callbacks.length; i++) {
+      clearTimeout(this.callbacks[i]);
+    }
   }
 
   render () {
     return (
       <Row className="py-3 justify-content-center"> 
-        <Col className="d-flex col-8 border-bottom justify-content-center">
+        <Col className="d-flex col-8 justify-content-center">
           <PageTransition page={this.state.messageId}> 
             <h4>Here is a mountain scenery</h4>
             <h4>Click on the tree leaves to select</h4>
