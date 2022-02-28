@@ -10,15 +10,15 @@ import { isUndef } from "../utils/misc.js";
 import addStopPropagation from "../utils/eventModifier";
 import alphaBlink from "../utils/math.js";
 
-function validHighlight (hl) {
-  return !isUndef(hl) && hl.length > 0; 
+function validHighlight(hl) {
+  return !isUndef(hl) && hl.length > 0;
 }
-  
-function getStroke (nodeId, selected, highlight, t) {
+
+function getStroke(nodeId, selected, highlight, t) {
   if (selected.includes(nodeId)) {
-    return rgb2string(selectColor, 1); 
+    return rgb2string(selectColor, 1);
   } else if (validHighlight(highlight) && highlight.includes(nodeId)) {
-    return rgb2string(highlightColor, alphaBlink(t)); 
+    return rgb2string(highlightColor, alphaBlink(t));
   } else {
     return "none";
   }
@@ -33,14 +33,13 @@ function getStroke (nodeId, selected, highlight, t) {
  *
  * Links can be deleted by double clicking on them.
  *
- * Nodes can be drag and dropped. For example, dragging and dropping a single path node on 
+ * Nodes can be drag and dropped. For example, dragging and dropping a single path node on
  * a group node will add the single path to the group.
  *
  * Paths or groups can also be selected by clicking on nodes.
  */
 class GraphHandler extends Component {
-  
-  constructor (props) {
+  constructor(props) {
     super(props);
     this.state = {
       x: 0,
@@ -54,16 +53,16 @@ class GraphHandler extends Component {
     this.setState((prevState) => {
       const { x } = prevState;
       return { x: x + 1 };
-    }); 
-  }
+    });
+  };
 
   /*
    * Create React Elements for a subset of paths of the SVG.
    *
-   * When a collection of paths are grouped, a new node is 
+   * When a collection of paths are grouped, a new node is
    * created for that grouping.
    *
-   * The collection of paths is embedded in the node giving the 
+   * The collection of paths is embedded in the node giving the
    * user visual feedback on their grouping.
    *
    * @param   {Array}   pathIds - Indices of paths for this node.
@@ -75,20 +74,23 @@ class GraphHandler extends Component {
   subsetSVG = (pathIds, nodeId) => {
     const { paths } = this.props.graphic;
     pathIds.sort((x, y) => x - y);
-    const pathSubset = pathIds.map(i => paths[i]);
+    const pathSubset = pathIds.map((i) => paths[i]);
     return pathSubset.map((ps, psId) => {
       return React.createElement(ps.tagName, {
         ...ps.properties,
-        key: `path-${nodeId}-${psId}`
+        key: `path-${nodeId}-${psId}`,
       });
     });
   };
 
-  componentDidUpdate (prevProps) {
+  componentDidUpdate(prevProps) {
     const { highlight } = this.props;
     if (!validHighlight(prevProps.highlight) && validHighlight(highlight)) {
       this.counter = setInterval(this.increment, 40);
-    } else if (validHighlight(prevProps.highlight) && !validHighlight(highlight)) {
+    } else if (
+      validHighlight(prevProps.highlight) &&
+      !validHighlight(highlight)
+    ) {
       clearInterval(this.increment, 40);
     }
   }
@@ -96,7 +98,7 @@ class GraphHandler extends Component {
   /*
    * Find the node transformation.
    *
-   * The node transformation depends on the area occupied by the paths in it, 
+   * The node transformation depends on the area occupied by the paths in it,
    * it's radius and it's x and y position.
    *
    * This function is used for calculating transformations while displaying the
@@ -109,7 +111,7 @@ class GraphHandler extends Component {
    */
   nodeTransformation = (paths, radius, x, y) => {
     const { bboxes } = this.props.graphic;
-    const box = coveringBBox(paths.map(i => bboxes[i]));
+    const box = coveringBBox(paths.map((i) => bboxes[i]));
     const scale = Math.min(1, radius / Math.max(box.width, box.height));
     let { cx, cy } = boxCenter(box);
     cx *= scale;
@@ -118,14 +120,14 @@ class GraphHandler extends Component {
     const ty = y - cy;
     return { scale, tx, ty };
   };
-  
+
   /*
    * Helper function for getVertices to convert graph nodes into SVG Group Elements.
    *
-   * Each node in the graph is represented by the subset of paths within it. 
+   * Each node in the graph is represented by the subset of paths within it.
    * These paths need to be displayed within these nodes.
    *
-   * This function determines the size of the nodes and calculates the transformation 
+   * This function determines the size of the nodes and calculates the transformation
    * for the path subset so that it can be displayed within the nodes.
    *
    * @param   {Object}  node - Contains the id of the node,
@@ -133,16 +135,16 @@ class GraphHandler extends Component {
    *
    * @returns {Component} SVG Group Element.
    */
-  node2Group = node => {
+  node2Group = (node) => {
     const {
       selected,
       onClick,
       onPointerOver,
       onPointerLeave,
       onNodeDblClick,
-      highlight
+      highlight,
     } = this.props;
-    const stroke = getStroke(node.id, selected, highlight, this.state.x); 
+    const stroke = getStroke(node.id, selected, highlight, this.state.x);
     const { scale, tx, ty } = this.nodeTransformation(
       node.paths,
       node.radius,
@@ -155,7 +157,9 @@ class GraphHandler extends Component {
         onClick={addStopPropagation((evt) => onClick(evt, node.id))}
         onPointerOver={addStopPropagation(() => onPointerOver(node.id))}
         onPointerLeave={addStopPropagation(() => onPointerLeave(node.id))}
-        onDoubleClick={addStopPropagation((evt) => onNodeDblClick(evt, node.id))}
+        onDoubleClick={addStopPropagation((evt) =>
+          onNodeDblClick(evt, node.id)
+        )}
         opacity={node.visible}
         pointerEvents={node.visible === 1 ? "auto" : "none"}
       >
@@ -190,7 +194,9 @@ class GraphHandler extends Component {
       return <path />;
     }
     // Filter out all nodes which are children of some node.
-    let nodes = graph.nodes.filter(node => typeof node.parent === "undefined");
+    let nodes = graph.nodes.filter(
+      (node) => typeof node.parent === "undefined"
+    );
     const groups = nodes.map(this.node2Group);
     return groups;
   };
@@ -210,4 +216,3 @@ class GraphHandler extends Component {
 }
 
 export default GraphHandler;
-

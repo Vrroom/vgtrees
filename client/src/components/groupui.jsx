@@ -12,12 +12,14 @@ import {
   findRoot,
   updateVisualProperties,
   groupNodes,
+  isTree,
 } from "../utils/graph";
 import { nodeColors } from "../utils/palette";
 import * as d3 from "d3";
 import { ReactComponent as Group } from "../icons/group.svg";
 import IconButton from "./iconbutton";
-import { isUndef } from "../utils/misc"; 
+import { isUndef } from "../utils/misc";
+import postData from "../utils/post";
 
 class GroupUI extends Component {
   /*
@@ -41,8 +43,8 @@ class GroupUI extends Component {
       selected: [],
       filename: "",
       highlightGroup: false,
-      highlightSvg: [], 
-      highlightGraph: [], 
+      highlightSvg: [],
+      highlightGraph: [],
     };
     // d3-force's simulation object for calculating
     // the graph layout and because it looks cool.
@@ -50,7 +52,7 @@ class GroupUI extends Component {
   }
 
   setGraphState = (graph) => {
-    this.setState({ graph: graph });
+    this.setState({ graph });
   };
 
   /*
@@ -94,13 +96,11 @@ class GroupUI extends Component {
    * with this SVG string and id.
    */
   getNewSVGFromDB = () => {
-    const { src } = this.props;
-    fetch(src)
-      .then((res) => res.json())
-      .then((item) => {
-        const { svg, filename } = item;
-        this.setStateWithNewSVG(svg, filename);
-      });
+    const { src, metadata } = this.props;
+    postData(src, metadata).then((item) => {
+      const { svg, filename } = item;
+      this.setStateWithNewSVG(svg, filename);
+    });
   };
 
   /*
@@ -162,7 +162,7 @@ class GroupUI extends Component {
     if (!isUndef(notifyParent)) {
       notifyParent(msg);
     }
-  }
+  };
 
   /*
    * Handle Click event on a particular node.
@@ -287,6 +287,9 @@ class GroupUI extends Component {
       groupNodes(this.state.graph, selected),
       this.state.graphic
     );
+    if (isTree(graph)) {
+      postData("/tree", { ...this.state, graph });
+    }
     this.updateSimulation(graph);
     this.tryNotifyParent({ type: "group", selected });
   };
@@ -302,7 +305,7 @@ class GroupUI extends Component {
   handleClear = (event) => {
     const selected = [];
     this.setState({ selected });
-    this.tryNotifyParent({ type: "clear" }); 
+    this.tryNotifyParent({ type: "clear" });
   };
 
   render() {
@@ -335,8 +338,8 @@ class GroupUI extends Component {
             />
           </Col>
         </Row>
-        <Row> 
-          <Col> 
+        <Row>
+          <Col>
             <IconButton
               name="Group"
               active={true}

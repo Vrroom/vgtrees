@@ -9,12 +9,11 @@ import { isUndef } from "../utils/misc.js";
 import alphaBlink from "../utils/math";
 
 class IconButton extends Component {
-
-  constructor (props) {
-    super(props);  
+  constructor(props) {
+    super(props);
     this.state = {
-      x: 0 
-    }
+      x: 0,
+    };
     if (props.highlight) {
       this.counter = setInterval(this.increment, 40);
     }
@@ -24,10 +23,10 @@ class IconButton extends Component {
     this.setState((prevState) => {
       const { x } = prevState;
       return { x: x + 1 };
-    }); 
-  }
+    });
+  };
 
-  componentDidUpdate (prevProps) {
+  componentDidUpdate(prevProps) {
     if (prevProps.highlight !== this.props.highlight) {
       if (this.props.highlight) {
         this.counter = setInterval(this.increment, 40);
@@ -39,28 +38,30 @@ class IconButton extends Component {
 
   render() {
     const { active, children, highlight, onClick } = this.props;
-    let { variant } = this.props; 
+    let { variant } = this.props;
     if (isUndef(variant)) {
       variant = "light";
     }
-    const style = {}; 
+    const style = {};
     if (highlight) {
       const alpha = alphaBlink(this.state.x);
       const color = rgb2string(highlightColor, alpha);
-      style['boxShadow'] = `0 0 0 .6rem ${color}`;
+      style["boxShadow"] = `0 0 0 .6rem ${color}`;
     }
     return (
-      <Row> 
-        <Col className="d-flex justify-content-center"> 
+      <Row>
+        <Col className="d-flex justify-content-center">
           <OverlayTrigger
             placement="bottom"
             delay={{ show: 250, hide: 400 }}
             overlay={<Tooltip>{this.props.name}</Tooltip>}
           >
             <div className={active ? "visible" : "invisible"}>
-              <Button variant={variant} style={style} onClick={onClick}> {children} </Button>
+              <Button variant={variant} style={style} onClick={onClick}>
+                {children}
+              </Button>
             </div>
-          </OverlayTrigger> 
+          </OverlayTrigger>
         </Col>
       </Row>
     );

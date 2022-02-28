@@ -9,56 +9,59 @@ import { selectColor, highlightColor, rgb2string } from "../utils/palette";
 import { isStyleNotNone } from "../utils/svg";
 import { node2ReactElement } from "../utils/reacthelpers";
 import { isUndef } from "../utils/misc";
-import alphaBlink from "../utils/math"; 
+import alphaBlink from "../utils/math";
 
-function validHighlight (hl) {
+function validHighlight(hl) {
   return !isUndef(hl) && hl.length > 0;
 }
 
-function coverElement (path, key, props, t) {
-  const { graph, selected, hover, highlight } = props; 
+function coverElement(path, key, props, t) {
+  const { graph, selected, hover, highlight } = props;
   const selectedId = selected.map((i) => graph.nodes[i].paths).flat();
-  if (!validHighlight(highlight) && !selectedId.includes(key) && !hover.includes(key)) {
+  if (
+    !validHighlight(highlight) &&
+    !selectedId.includes(key) &&
+    !hover.includes(key)
+  ) {
     return null;
   }
-  const { onClick } = props; 
+  const { onClick } = props;
   let color = "none";
   if (validHighlight(highlight) && highlight.includes(key)) {
     color = rgb2string(highlightColor, alphaBlink(t));
   } else if (selectedId.includes(key)) {
     color = rgb2string(selectColor, 1);
   } else if (hover.includes(key)) {
-    color = rgb2string(selectColor, 0.6); 
+    color = rgb2string(selectColor, 0.6);
   }
-  const fill = isStyleNotNone("fill", path.properties) ? color : "none"; 
-  const stroke = isStyleNotNone("stroke", path.properties) ? color : "none"; 
+  const fill = isStyleNotNone("fill", path.properties) ? color : "none";
+  const stroke = isStyleNotNone("stroke", path.properties) ? color : "none";
   return React.createElement(path.tagName, {
-    ...path.properties, 
+    ...path.properties,
     id: "cover-element",
-    fill, 
+    fill,
     stroke,
-    onClick: addStopPropagation(evt => onClick(evt, key))
+    onClick: addStopPropagation((evt) => onClick(evt, key)),
   });
 }
 
-function pathElement (path, key, events) {
-  const { onClick, onPointerOver, onPointerLeave } = events; 
+function pathElement(path, key, events) {
+  const { onClick, onPointerOver, onPointerLeave } = events;
   return React.createElement(path.tagName, {
-    ...path.properties, 
+    ...path.properties,
     id: `path-${key}`,
     onClick: addStopPropagation((evt) => onClick(evt, key)),
     onPointerOver: addStopPropagation(() => onPointerOver(key)),
     onPointerLeave: addStopPropagation(() => onPointerLeave(key)),
-  }); 
+  });
 }
 
 class SVGHandler extends Component {
-
   constructor(props) {
-    super(props); 
+    super(props);
     this.state = {
-      x: 0, 
-    }; 
+      x: 0,
+    };
     if (validHighlight(props.highlight)) {
       setInterval(this.increment, 40);
     }
@@ -68,14 +71,17 @@ class SVGHandler extends Component {
     this.setState((prevState) => {
       const { x } = prevState;
       return { x: x + 1 };
-    }); 
-  }
+    });
+  };
 
-  componentDidUpdate (prevProps) {
+  componentDidUpdate(prevProps) {
     const { highlight } = this.props;
     if (!validHighlight(prevProps.highlight) && validHighlight(highlight)) {
       this.counter = setInterval(this.increment, 40);
-    } else if (validHighlight(prevProps.highlight) && !validHighlight(highlight)) {
+    } else if (
+      validHighlight(prevProps.highlight) &&
+      !validHighlight(highlight)
+    ) {
       clearInterval(this.increment, 40);
     }
   }
@@ -89,11 +95,11 @@ class SVGHandler extends Component {
     const { paths, defs } = this.props.graphic;
     const elements = paths.map((path, key) => {
       return (
-        <g key={`path-group-${key}`}> 
-          {pathElement(path, key, this.props)} 
+        <g key={`path-group-${key}`}>
+          {pathElement(path, key, this.props)}
           {coverElement(path, key, this.props, this.state.x)}
         </g>
-      ); 
+      );
     });
     if (typeof defs !== "undefined") {
       elements.splice(0, 0, node2ReactElement(defs));

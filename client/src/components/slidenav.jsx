@@ -7,13 +7,13 @@ import { ReactComponent as LeftArrow } from "../icons/leftarrow.svg";
 import { ReactComponent as RightArrow } from "../icons/rightarrow.svg";
 
 class SlideNav extends Component {
-
   render() {
-    const { nSlides, slideId, onPrev, onNext, highlightPrev, highlightNext } = this.props; 
-    const pct = (100 * (slideId + 1) / nSlides);
+    const { nSlides, slideId, onPrev, onNext, highlightPrev, highlightNext } =
+      this.props;
+    const pct = (100 * (slideId + 1)) / nSlides;
     return (
-      <Row className="py-3 justify-content-center"> 
-        <Col> 
+      <Row className="py-3 justify-content-center">
+        <Col>
           <IconButton
             name="Previous"
             active={slideId > 0}
@@ -23,28 +23,18 @@ class SlideNav extends Component {
             <LeftArrow />
           </IconButton>
         </Col>
-        <Col className="align-self-center"> 
+        <Col className="align-self-center">
           <ProgressBar variant="success" now={pct} />
         </Col>
-        <Col> 
-          {slideId + 1 < nSlides ? 
-            <IconButton
-              name="Next"
-              active={slideId + 1 < nSlides}
-              onClick={onNext}
-              highlight={highlightNext}
-            >
-              <RightArrow />
-            </IconButton> 
-            : 
-            <IconButton
-              name="Submit"
-              active={slideId + 1 === nSlides}
-              variant="primary"
-              onClick={() => {}}
-            >
-              Submit
-            </IconButton>}
+        <Col>
+          <IconButton
+            name="Next"
+            active={slideId + 1 < nSlides}
+            onClick={onNext}
+            highlight={highlightNext}
+          >
+            <RightArrow />
+          </IconButton>
         </Col>
       </Row>
     );

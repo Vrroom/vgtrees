@@ -3,7 +3,7 @@ import { SwitchTransition, CSSTransition } from "react-transition-group";
 
 import "../css/transition.css";
 
-function PageTransition (props) {
+function PageTransition(props) {
   const { children, page, ...rest } = props;
   return (
     <SwitchTransition mode="out-in">

@@ -20,35 +20,35 @@ function Likert (props) {
               label="Strongly Disagree"
               name={`likert-${qnum}`}
               type="radio"
-              id="1"
+              id={`likert-${qnum}-1`}
             />
             <Form.Check
               inline
               label="Disagree"
               name={`likert-${qnum}`}
               type="radio"
-              id="2"
+              id={`likert-${qnum}-2`}
             />
             <Form.Check
               inline
               label="Neutral"
               name={`likert-${qnum}`}
               type="radio"
-              id="3"
+              id={`likert-${qnum}-3`}
             />
             <Form.Check
               inline
               label="Agree"
               name={`likert-${qnum}`}
               type="radio"
-              id="4"
+              id={`likert-${qnum}-4`}
             />
             <Form.Check
               inline
               label="Strongly Agree"
               name={`likert-${qnum}`}
               type="radio"
-              id="5"
+              id={`likert-${qnum}-5`}
             />
           </Form>
         </Col>

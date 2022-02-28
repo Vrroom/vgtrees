@@ -480,6 +480,12 @@ function findRoot(node, graph) {
   return node;
 }
 
+function isTree (graph) {
+  const { nodes } = graph;
+  const roots = nodes.filter((node, id) => isRoot(id, graph))
+  return roots.length === 1;
+}
+
 export {
   depth,
   connected,
@@ -492,5 +498,7 @@ export {
   groupNodes,
   updateVisualProperties,
   isRoot,
-  findRoot
+  findRoot,
+  connectedComponents,
+  isTree
 };

@@ -6,6 +6,7 @@
 .slide-content {
   min-height: 65vh;
   max-height: 65vh;
+  overflow-y: scroll;
 }
 
 #svg-element, #svg-graph-element {

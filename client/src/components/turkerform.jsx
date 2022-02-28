@@ -22,12 +22,7 @@ class TurkerForm extends Component {
     const { validated } = this.props;
     return (
       <Container className="px-5">
-        <Form
-          noValidate
-          id="turker-form"
-          validated={validated}
-          method="post"
-        >
+        <Form noValidate id="turker-form" validated={validated} method="post">
           <Row className="g-5">
             <Form.Group as={Col} md="6" controlId="validationCustomEmail">
               <Form.Label>Email address</Form.Label>
