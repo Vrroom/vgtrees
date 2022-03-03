@@ -369,13 +369,7 @@ function groupNodes(forest, nodes) {
   const graph = cloneDeep(forest);
   const nNodes = graph.nodes.length;
   const paths = nodes.map(id => graph.nodes[id].paths).flat();
-  const othersChildren = graph.nodes
-    .filter(n => n.type === "group")
-    .map(n => n.children)
-    .flat();
-  const correctNumber = nodes.length >= 2;
-  const nodeDisjoint = disjoint(othersChildren, nodes);
-  if (correctNumber && nodeDisjoint) {
+  if (nodes.length >= 2) {
     graph.nodes.push({
       id: nNodes,
       x: 0,

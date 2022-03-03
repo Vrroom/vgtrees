@@ -16,11 +16,11 @@ function Slides(props) {
         <Intro />
         <Tutorial />
         <TaskIntro />
-        <GroupUI src="task" metadata={{ taskNum: 0 }} />
-        <GroupUI src="task" metadata={{ taskNum: 1 }} />
-        <GroupUI src="task" metadata={{ taskNum: 2 }} />
-        <GroupUI src="task" metadata={{ taskNum: 3 }} />
-        <GroupUI src="task" metadata={{ taskNum: 4 }} />
+        <GroupUI src="task" target="/tree" metadata={{ taskNum: 0 }} />
+        <GroupUI src="task" target="/tree" metadata={{ taskNum: 1 }} />
+        <GroupUI src="task" target="/tree" metadata={{ taskNum: 2 }} />
+        <GroupUI src="task" target="/tree" metadata={{ taskNum: 3 }} />
+        <GroupUI src="task" target="/tree" metadata={{ taskNum: 4 }} />
         <Survey />
         <Comments />
       </SlideGroup>

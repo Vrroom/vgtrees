@@ -1,8 +1,8 @@
 import React, { Component } from "react";
 import Row from "react-bootstrap/Row";
 import Col from "react-bootstrap/Col";
-import SVGHandler from "./svghandler";
-import GraphHandler from "./graphhandler";
+import GraphicDisplay from "./graphicdisplay";
+import GroupDisplay from "./groupdisplay";
 import { preprocessSVG } from "../utils/svg";
 import { boxforce } from "../utils/boxforce";
 import { cloneDeep } from "lodash";
@@ -20,6 +20,21 @@ import { ReactComponent as Group } from "../icons/group.svg";
 import IconButton from "./iconbutton";
 import { isUndef } from "../utils/misc";
 import postData from "../utils/post";
+
+function skipClear (props) {
+  const { disableClear } = props;
+  return !isUndef(disableClear) && disableClear;
+}
+
+function skipGroup (props) {
+  const { disableGroup } = props;
+  return !isUndef(disableGroup) && disableGroup;
+}
+
+function skipNode (props, nid) {
+  const { disableNodes } = props;
+  return !isUndef(disableNodes) && disableNodes.includes(nid);
+}
 
 class GroupUI extends Component {
   /*
@@ -42,13 +57,16 @@ class GroupUI extends Component {
       hover: [],
       selected: [],
       filename: "",
-      highlightGroup: false,
-      highlightSvg: [],
-      highlightGraph: [],
+      svgString: '<svg height="100" width="100"></svg>',
     };
     // d3-force's simulation object for calculating
     // the graph layout and because it looks cool.
     this.sim = d3.forceSimulation();
+  }
+
+  resetToInit = () => {
+    const { svgString, filename } = this.state;
+    this.setStateWithNewSVG(svgString, filename); 
   }
 
   setGraphState = (graph) => {
@@ -73,6 +91,7 @@ class GroupUI extends Component {
    * event listener.
    */
   componentWillUnmount() {
+    this.sim.stop();
     window.removeEventListener("click", this.handleClear);
   }
 
@@ -85,7 +104,8 @@ class GroupUI extends Component {
       hover: [],
       selected: [],
       filename,
-    });
+      svgString
+    }); 
     this.updateSimulation(graph);
     this.tryNotifyParent({ type: "new-svg", graph });
   };
@@ -120,7 +140,7 @@ class GroupUI extends Component {
    *    D3 will internally call this callback on each step
    *    of the simulation. The callback updates the graph state
    *    of the component with the latest value of node positions.
-   *    Once this is done, React will update the GraphHandler
+   *    Once this is done, React will update the GroupDisplay
    *    component with the new node positions. As a result,
    *    the user will see the nodes move towards their final
    *    layout.
@@ -179,6 +199,8 @@ class GroupUI extends Component {
    * the event was fired.
    */
   handleClick = (event, id) => {
+    if (skipNode(this.props, id)) 
+      return;
     const selected = cloneDeep(this.state.selected);
     const graph = this.state.graph;
     id = findRoot(id, graph);
@@ -282,13 +304,16 @@ class GroupUI extends Component {
    * the merge if this is the case.
    */
   handleGroupClick = (event) => {
+    if (skipGroup(this.props)) 
+      return;
     const selected = [...this.state.selected];
     const graph = updateVisualProperties(
       groupNodes(this.state.graph, selected),
       this.state.graphic
     );
     if (isTree(graph)) {
-      postData("/tree", { ...this.state, graph });
+      postData(this.props.target, { ...this.state, graph })
+        .then(res => this.tryNotifyParent({ type: "tree-check", ...res })); 
     }
     this.updateSimulation(graph);
     this.tryNotifyParent({ type: "group", selected });
@@ -303,17 +328,23 @@ class GroupUI extends Component {
    * editors.
    */
   handleClear = (event) => {
+    if (skipClear(this.props)) 
+      return;
     const selected = [];
     this.setState({ selected });
     this.tryNotifyParent({ type: "clear" });
   };
 
   render() {
+    let { highlightSvg, highlightGroup, highlightGraph } = this.props;
+    if (isUndef(highlightSvg)) highlightSvg = [];
+    if (isUndef(highlightGraph)) highlightGraph = []; 
+    if (isUndef(highlightGroup)) highlightGroup = false;
     return (
       <>
         <Row>
           <Col className="d-flex justify-content-center">
-            <SVGHandler
+            <GraphicDisplay
               graphic={this.state.graphic}
               graph={this.state.graph}
               selected={this.state.selected}
@@ -321,11 +352,11 @@ class GroupUI extends Component {
               onClick={this.handleClick}
               onPointerOver={this.handlePointerOver}
               onPointerLeave={this.handlePointerLeave}
-              highlight={this.state.highlightSvg}
+              highlight={highlightSvg}
             />
           </Col>
           <Col className="d-flex justify-content-center">
-            <GraphHandler
+            <GroupDisplay
               graphic={this.state.graphic}
               docId={this.state.id}
               graph={this.state.graph}
@@ -334,7 +365,7 @@ class GroupUI extends Component {
               onPointerOver={this.handlePointerOver}
               onPointerLeave={this.handlePointerLeave}
               onNodeDblClick={this.handleNodeDblClick}
-              highlight={this.state.highlightGraph}
+              highlight={highlightGraph}
             />
           </Col>
         </Row>
@@ -344,7 +375,7 @@ class GroupUI extends Component {
               name="Group"
               active={true}
               onClick={this.handleGroupClick}
-              highlight={this.state.highlightGroup}
+              highlight={highlightGroup}
             >
               <Group />
             </IconButton>

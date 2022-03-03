@@ -36,6 +36,10 @@ class IconButton extends Component {
     }
   }
 
+  componentWillUnmount () {
+    clearInterval(this.counter);
+  }
+
   render() {
     const { active, children, highlight, onClick } = this.props;
     let { variant } = this.props;

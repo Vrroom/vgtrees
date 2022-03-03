@@ -1,5 +1,5 @@
 /*
- * @file GraphHandler class implementation.
+ * @file GroupDisplay class implementation.
  *
  * @author Sumit Chaturvedi
  */
@@ -38,14 +38,14 @@ function getStroke(nodeId, selected, highlight, t) {
  *
  * Paths or groups can also be selected by clicking on nodes.
  */
-class GraphHandler extends Component {
+class GroupDisplay extends Component {
   constructor(props) {
     super(props);
     this.state = {
       x: 0,
     };
     if (validHighlight(props.highlight)) {
-      setInterval(this.increment, 40);
+      this.counter = setInterval(this.increment, 40);
     }
   }
 
@@ -91,8 +91,12 @@ class GraphHandler extends Component {
       validHighlight(prevProps.highlight) &&
       !validHighlight(highlight)
     ) {
-      clearInterval(this.increment, 40);
+      clearInterval(this.counter, 40);
     }
+  }
+
+  componentWillUnmount () {
+    clearInterval(this.counter);
   }
 
   /*
@@ -215,4 +219,4 @@ class GraphHandler extends Component {
   }
 }
 
-export default GraphHandler;
+export default GroupDisplay;
