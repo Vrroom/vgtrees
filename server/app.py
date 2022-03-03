@@ -24,7 +24,11 @@ Session(app)
 # Important globals.
 CAPTCHA_VERIFY = 'https://www.google.com/recaptcha/api/siteverify'
 CAPTCHA_SECRET = os.environ['CAPTCHA_SECRET']
-SVGS = None
+DATADIR = '../../vectorrvnn/Emojis'
+SVGS = list(filter(
+    lambda x : x.endswith('svg'), 
+    allfiles(DATADIR)
+))
 
 @app.route('/')
 def root():  
@@ -104,10 +108,5 @@ def comments () :
     return jsonify(success=True)
 
 if __name__ == '__main__':
-    datadir = sys.argv[1]
-    SVGS = list(filter(
-        lambda x : x.endswith('svg'), 
-        allfiles(datadir)
-    ))
     app.run(host='0.0.0.0', port=80)
 
