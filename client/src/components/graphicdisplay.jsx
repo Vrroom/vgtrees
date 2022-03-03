@@ -1,5 +1,5 @@
 /**
- * @file SVGHandler class implementation.
+ * @file GraphicDisplay class implementation.
  *
  * @author Sumit Chaturvedi
  */
@@ -56,14 +56,14 @@ function pathElement(path, key, events) {
   });
 }
 
-class SVGHandler extends Component {
+class GraphicDisplay extends Component {
   constructor(props) {
     super(props);
     this.state = {
       x: 0,
     };
     if (validHighlight(props.highlight)) {
-      setInterval(this.increment, 40);
+      this.counter = setInterval(this.increment, 40);
     }
   }
 
@@ -82,8 +82,12 @@ class SVGHandler extends Component {
       validHighlight(prevProps.highlight) &&
       !validHighlight(highlight)
     ) {
-      clearInterval(this.increment, 40);
+      clearInterval(this.counter, 40);
     }
+  }
+
+  componentWillUnmount () {
+    clearInterval(this.counter);
   }
 
   /**
@@ -118,4 +122,4 @@ class SVGHandler extends Component {
   }
 }
 
-export default SVGHandler;
+export default GraphicDisplay;
