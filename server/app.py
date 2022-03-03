@@ -78,9 +78,28 @@ def logip () :
 
 @app.route('/tutorialgraphic', methods=['POST', 'GET'])
 def tutorialgraphic () :
-    with open('./assets/tutorial.svg') as fd :
-        content = fd.read()
-    return jsonify(svg=content, filename='tutorial.svg')
+    with open('./assets/tutorial.pkl', 'rb') as fp: 
+        T = pickle.load(fp) 
+    inFile = '/tmp/in.svg'
+    with open(inFile, 'w+') as fp :
+        fp.write(repr(T.doc))
+    outFile = '/tmp/o.svg'
+    call(['./usvg', inFile, outFile])
+    with open(outFile) as fd :
+        svg = fd.read()
+    return jsonify(svg=svg, filename='tutorial.svg')
+
+@app.route('/checktutorial', methods=['POST', 'GET']) 
+def checktutorial () : 
+    with open('./assets/tutorial.pkl', 'rb') as fp: 
+        T = pickle.load(fp) 
+    T_ = appGraph2nxGraph(request.json['graph'])
+    score = norm_cted(T, T_)
+    id = session['id']
+    with open(f'../data/{id}/tutscores.txt', 'a+') as fp :
+        fp.write(f'{score}\n')
+    success = score < 0.2
+    return jsonify(success=success)
 
 @app.route('/survey', methods=['POST', 'GET']) 
 def survey () :
