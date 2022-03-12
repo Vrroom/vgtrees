@@ -1,19 +1,19 @@
-import React from "react"; 
-import Form from "react-bootstrap/Form"; 
+import React from "react";
+import Form from "react-bootstrap/Form";
 import Row from "react-bootstrap/Row";
-import Col from "react-bootstrap/Col"; 
+import Col from "react-bootstrap/Col";
 
-function Likert (props) { 
+function Likert(props) {
   const { qnum, children } = props;
   return (
     <>
       <Row className="justify-content-center">
         <Col>
           <h4>{children}</h4>
-        </Col> 
+        </Col>
       </Row>
-      <Row className="py-2 justify-content-center"> 
-        <Col className="d-flex justify-content-center"> 
+      <Row className="py-2 justify-content-center">
+        <Col className="d-flex justify-content-center">
           <Form>
             <Form.Check
               inline
@@ -52,9 +52,9 @@ function Likert (props) {
             />
           </Form>
         </Col>
-      </Row> 
+      </Row>
     </>
-  ); 
+  );
 }
 
 export default Likert;

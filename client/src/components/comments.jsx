@@ -4,17 +4,18 @@ import Form from "react-bootstrap/Form";
 import Col from "react-bootstrap/Col";
 import Row from "react-bootstrap/Row";
 import ListGroup from "react-bootstrap/ListGroup";
-import postData from "../utils/post";
+import { postData, postCurrentTime } from "../utils/post";
 import { Fireworks } from "fireworks-js/dist/react";
 import PageTransition from "./transition";
 
 function Comments(props) {
-  const [page, setPage] = useState(0); 
+  const [page, setPage] = useState(0);
   const postComments = () => {
     const comments = document.getElementById("comments").value;
     postData("/comments", { comments });
+    postCurrentTime({ end: true }); 
     setPage(1);
-  }
+  };
   return (
     <PageTransition page={page}>
       <>

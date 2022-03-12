@@ -6,11 +6,12 @@ from flask_session import Session
 import pickle
 from vectorrvnn.utils import *
 from vectorrvnn.data import *
+from vectorrvnn.geometry import *
 import requests
-import sys
 import svgpathtools as svg
 import uuid
 import json
+from functools import partial
 
 def rootdir():  
     return osp.abspath(osp.dirname(__file__))
@@ -29,6 +30,29 @@ SVGS = list(filter(
     lambda x : x.endswith('svg'), 
     allfiles(DATADIR)
 ))
+GROUP_HEURISTICS=[
+    partial(
+        maximalCliques, 
+        featureFns=[fourier_descriptor, centroid],
+        margin=5e-2
+    ),
+]
+
+def getGroups (tree) : 
+    groups = []
+    for heuristic in GROUP_HEURISTICS : 
+        groups.extend(heuristic(tree)) 
+    # Some of these groups may overlap. Finding the maximum number 
+    # of non-overlapping groups is NP Complete. 
+    rng.shuffle(groups)
+    mark = [False for _ in range(tree.nPaths)]
+    selected = []
+    for g in groups : 
+        if all([not mark[_] for _ in g]) : 
+            selected.append([int(_) for _ in g])
+            for _ in g :
+                mark[_] = True
+    return selected
 
 @app.route('/')
 def root():  
@@ -44,11 +68,9 @@ def root():
 def task () : 
     taskNum = request.json['taskNum']
     svgFile = SVGS[session['tasks'][taskNum]]
-    outFile = '/tmp/o.svg'
-    call(['./usvg', svgFile, outFile])
-    with open(outFile) as fd :
-        content = fd.read()
-    return jsonify(svg=content, filename=svgFile)
+    tree = SVGData(svgFile, convert2usvg=True) 
+    groups = getGroups(tree)
+    return jsonify(svg=tree.svg, groups=groups, filename=svgFile)
 
 @app.route('/validate', methods=['POST', 'GET'])
 def validate () : 
@@ -84,18 +106,20 @@ def tutorialgraphic () :
     with open(inFile, 'w+') as fp :
         fp.write(repr(T.doc))
     outFile = '/tmp/o.svg'
-    call(['./usvg', inFile, outFile])
+    call(['usvg', inFile, outFile])
     with open(outFile) as fd :
         svg = fd.read()
     return jsonify(svg=svg, filename='tutorial.svg')
 
 @app.route('/checktutorial', methods=['POST', 'GET']) 
 def checktutorial () : 
+    id = session['id']
     with open('./assets/tutorial.pkl', 'rb') as fp: 
         T = pickle.load(fp) 
     T_ = appGraph2nxGraph(request.json['graph'])
+    with open(f'../data/{id}/tutorialTree.json', 'w+') as fp :
+        json.dump(request.json, fp)
     score = norm_cted(T, T_)
-    id = session['id']
     with open(f'../data/{id}/tutscores.txt', 'a+') as fp :
         fp.write(f'{score}\n')
     success = score < 0.2
@@ -114,8 +138,21 @@ def survey () :
 def tree () : 
     id = session['id']
     payload = request.json
-    with open(f'../data/{id}/treeData.json', 'w+') as fp :
+    taskNum = payload['taskNum']
+    with open(f'../data/{id}/treeData{taskNum}.json', 'w+') as fp :
         json.dump(payload, fp)
+    return jsonify(success=True)
+
+@app.route('/time', methods=['POST', 'GET'])
+def time () : 
+    id = session['id'] 
+    payload = request.json
+    if payload.get('start', False) :
+        with open(f'../data/{id}/startTime.json', 'w+') as fp: 
+            json.dump(payload, fp)
+    else : 
+        with open(f'../data/{id}/endTime.json', 'w+') as fp :
+            json.dump(payload, fp)
     return jsonify(success=True)
 
 @app.route('/comments', methods=['POST', 'GET'])

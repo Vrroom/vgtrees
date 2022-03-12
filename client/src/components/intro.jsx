@@ -3,11 +3,13 @@ import Col from "react-bootstrap/Col";
 import Row from "react-bootstrap/Row";
 import ListGroup from "react-bootstrap/ListGroup";
 import Emoji from "./emoji";
+import { postCurrentTime } from "../utils/post"; 
 
 class Intro extends Component {
   componentDidMount() {
     const { setHighlight } = this.props;
     setHighlight(true);
+    postCurrentTime({ start: true }); 
   }
 
   componentWillUnmount() {

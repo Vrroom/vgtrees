@@ -5,7 +5,7 @@ import Row from "react-bootstrap/Row";
 import Likert from "./likert";
 import IconButton from "./iconbutton";
 import PageTransition from "./transition";
-import postData from "../utils/post";
+import { postData } from "../utils/post";
 import { Fireworks } from "fireworks-js/dist/react";
 
 class Survey extends Component {

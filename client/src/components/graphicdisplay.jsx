@@ -86,7 +86,7 @@ class GraphicDisplay extends Component {
     }
   }
 
-  componentWillUnmount () {
+  componentWillUnmount() {
     clearInterval(this.counter);
   }
 

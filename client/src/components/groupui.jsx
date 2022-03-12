@@ -19,19 +19,19 @@ import * as d3 from "d3";
 import { ReactComponent as Group } from "../icons/group.svg";
 import IconButton from "./iconbutton";
 import { isUndef } from "../utils/misc";
-import postData from "../utils/post";
+import { postData } from "../utils/post";
 
-function skipClear (props) {
+function skipClear(props) {
   const { disableClear } = props;
   return !isUndef(disableClear) && disableClear;
 }
 
-function skipGroup (props) {
+function skipGroup(props) {
   const { disableGroup } = props;
   return !isUndef(disableGroup) && disableGroup;
 }
 
-function skipNode (props, nid) {
+function skipNode(props, nid) {
   const { disableNodes } = props;
   return !isUndef(disableNodes) && disableNodes.includes(nid);
 }
@@ -66,8 +66,8 @@ class GroupUI extends Component {
 
   resetToInit = () => {
     const { svgString, filename } = this.state;
-    this.setStateWithNewSVG(svgString, filename); 
-  }
+    this.setStateWithNewSVG(svgString, filename);
+  };
 
   setGraphState = (graph) => {
     this.setState({ graph });
@@ -95,17 +95,22 @@ class GroupUI extends Component {
     window.removeEventListener("click", this.handleClear);
   }
 
-  setStateWithNewSVG = (svgString, filename) => {
+  setStateWithNewSVG = (svgString, filename, groups) => {
     const graphic = preprocessSVG(svgString);
-    const graph = createEmptyGraph(graphic);
+    let graph = createEmptyGraph(graphic);
+    if (isUndef(groups)) groups = [];
+    for (let i = 0; i < groups.length; i += 1) {
+      graph = groupNodes(graph, groups[i]);
+    }
+    graph = updateVisualProperties(graph, graphic);
     this.setState({
       graphic,
       graph: graph,
       hover: [],
       selected: [],
       filename,
-      svgString
-    }); 
+      svgString,
+    });
     this.updateSimulation(graph);
     this.tryNotifyParent({ type: "new-svg", graph });
   };
@@ -118,8 +123,8 @@ class GroupUI extends Component {
   getNewSVGFromDB = () => {
     const { src, metadata } = this.props;
     postData(src, metadata).then((item) => {
-      const { svg, filename } = item;
-      this.setStateWithNewSVG(svg, filename);
+      const { svg, filename, groups } = item;
+      this.setStateWithNewSVG(svg, filename, groups);
     });
   };
 
@@ -199,8 +204,7 @@ class GroupUI extends Component {
    * the event was fired.
    */
   handleClick = (event, id) => {
-    if (skipNode(this.props, id)) 
-      return;
+    if (skipNode(this.props, id)) return;
     const selected = cloneDeep(this.state.selected);
     const graph = this.state.graph;
     id = findRoot(id, graph);
@@ -304,16 +308,18 @@ class GroupUI extends Component {
    * the merge if this is the case.
    */
   handleGroupClick = (event) => {
-    if (skipGroup(this.props)) 
-      return;
+    if (skipGroup(this.props)) return;
     const selected = [...this.state.selected];
     const graph = updateVisualProperties(
       groupNodes(this.state.graph, selected),
       this.state.graphic
     );
     if (isTree(graph)) {
-      postData(this.props.target, { ...this.state, graph })
-        .then(res => this.tryNotifyParent({ type: "tree-check", ...res })); 
+      postData(this.props.target, {
+        ...this.state,
+        graph,
+        ...this.props.metadata,
+      }).then((res) => this.tryNotifyParent({ type: "tree-check", ...res }));
     }
     this.updateSimulation(graph);
     this.tryNotifyParent({ type: "group", selected });
@@ -328,8 +334,7 @@ class GroupUI extends Component {
    * editors.
    */
   handleClear = (event) => {
-    if (skipClear(this.props)) 
-      return;
+    if (skipClear(this.props)) return;
     const selected = [];
     this.setState({ selected });
     this.tryNotifyParent({ type: "clear" });
@@ -338,7 +343,7 @@ class GroupUI extends Component {
   render() {
     let { highlightSvg, highlightGroup, highlightGraph } = this.props;
     if (isUndef(highlightSvg)) highlightSvg = [];
-    if (isUndef(highlightGraph)) highlightGraph = []; 
+    if (isUndef(highlightGraph)) highlightGraph = [];
     if (isUndef(highlightGroup)) highlightGroup = false;
     return (
       <>

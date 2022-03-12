@@ -16,4 +16,26 @@ async function postData(url = '', data = {}) {
   return response.json(); // parses JSON response into native JavaScript objects
 }
 
-export default postData;
+function postCurrentTime (data) {
+  const now = new Date();
+  const dd = now.getDate();
+  const mm = now.getMonth();
+  const yyyy = now.getFullYear();
+  const hrs = now.getHours();
+  const min = now.getMinutes();
+  const sec = now.getSeconds();
+  postData("/time", {
+    dd,
+    mm,
+    yyyy,
+    hrs,
+    min,
+    sec,
+    ...data
+  });
+}
+
+export {
+  postData, 
+  postCurrentTime
+}; 

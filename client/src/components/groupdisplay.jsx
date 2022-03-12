@@ -95,7 +95,7 @@ class GroupDisplay extends Component {
     }
   }
 
-  componentWillUnmount () {
+  componentWillUnmount() {
     clearInterval(this.counter);
   }
 

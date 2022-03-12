@@ -36,7 +36,7 @@ class IconButton extends Component {
     }
   }
 
-  componentWillUnmount () {
+  componentWillUnmount() {
     clearInterval(this.counter);
   }
 

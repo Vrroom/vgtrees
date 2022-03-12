@@ -7,7 +7,7 @@ import Button from "react-bootstrap/Button";
 import ConsentForm from "./consentform";
 import TurkerForm from "./turkerform";
 import PageTransition from "./transition";
-import postData from "../utils/post";
+import { postData } from "../utils/post";
 
 class EntryModal extends Component {
   constructor(props) {
