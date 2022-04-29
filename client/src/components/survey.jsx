@@ -15,7 +15,7 @@ class Survey extends Component {
   }
 
   postRatings = () => {
-    const { setHighlight } = this.props;
+    const { setHighlight, setShowNext } = this.props;
     const ratings = [0, 1, 2, 3].map((qnum) => {
       const opt = [1, 2, 3, 4, 5].filter((option) => {
         const radio = document.getElementById(`likert-${qnum}-${option}`);
@@ -28,12 +28,14 @@ class Survey extends Component {
       }
     });
     postData("/survey", ratings).then(this.setState({ page: 1 }));
+    setShowNext(true);
     setHighlight(true);
   };
 
   componentWillUnmount() {
-    const { setHighlight } = this.props;
+    const { setHighlight, setShowNext } = this.props;
     setHighlight(false);
+    setShowNext(false);
   }
 
   render() {

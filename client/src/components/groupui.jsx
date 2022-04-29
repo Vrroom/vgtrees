@@ -1,6 +1,7 @@
 import React, { Component } from "react";
 import Row from "react-bootstrap/Row";
 import Col from "react-bootstrap/Col";
+import Spinner from "react-bootstrap/Spinner"; 
 import GraphicDisplay from "./graphicdisplay";
 import GroupDisplay from "./groupdisplay";
 import { preprocessSVG } from "../utils/svg";
@@ -58,6 +59,7 @@ class GroupUI extends Component {
       selected: [],
       filename: "",
       svgString: '<svg height="100" width="100"></svg>',
+      nothingIn: true
     };
     // d3-force's simulation object for calculating
     // the graph layout and because it looks cool.
@@ -91,6 +93,11 @@ class GroupUI extends Component {
    * event listener.
    */
   componentWillUnmount() {
+    if (!isUndef(this.props.setHighlight)) {
+      const { setHighlight, setShowNext } = this.props;
+      setHighlight(false); 
+      setShowNext(false); 
+    }
     this.sim.stop();
     window.removeEventListener("click", this.handleClear);
   }
@@ -110,6 +117,7 @@ class GroupUI extends Component {
       selected: [],
       filename,
       svgString,
+      nothingIn: false
     });
     this.updateSimulation(graph);
     this.tryNotifyParent({ type: "new-svg", graph });
@@ -320,6 +328,11 @@ class GroupUI extends Component {
         graph,
         ...this.props.metadata,
       }).then((res) => this.tryNotifyParent({ type: "tree-check", ...res }));
+      if (!isUndef(this.props.setHighlight)) {
+        const { setHighlight, setShowNext } = this.props;
+        setHighlight(true); 
+        setShowNext(true);
+      }
     }
     this.updateSimulation(graph);
     this.tryNotifyParent({ type: "group", selected });
@@ -342,6 +355,17 @@ class GroupUI extends Component {
 
   render() {
     let { highlightSvg, highlightGroup, highlightGraph } = this.props;
+    if (this.state.nothingIn) {
+      return (
+        <Row className="py-3 align-items-center">
+          <Col className="d-flex justify-content-center">
+            <Spinner animation="border" role="status">
+              <span className="visually-hidden">Loading...</span>
+            </Spinner>
+          </Col>
+        </Row>
+      );
+    }
     if (isUndef(highlightSvg)) highlightSvg = [];
     if (isUndef(highlightGraph)) highlightGraph = [];
     if (isUndef(highlightGroup)) highlightGroup = false;

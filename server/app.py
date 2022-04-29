@@ -25,18 +25,16 @@ Session(app)
 # Important globals.
 CAPTCHA_VERIFY = 'https://www.google.com/recaptcha/api/siteverify'
 CAPTCHA_SECRET = os.environ['CAPTCHA_SECRET']
-DATADIR = '../../vectorrvnn/Emojis'
+DATADIR = '../../vectorrvnn/data/MyAnnotations'
+ANNO_BASE = './data/'
 SVGS = list(filter(
     lambda x : x.endswith('svg'), 
     allfiles(DATADIR)
 ))
 GROUP_HEURISTICS=[
-    partial(
-        maximalCliques, 
-        featureFns=[fourier_descriptor, centroid],
-        margin=5e-2
-    ),
+    groupByShapeContexts
 ]
+rng.seed(100)
 
 def getGroups (tree) : 
     groups = []
@@ -58,7 +56,10 @@ def getGroups (tree) :
 def root():  
     session['id'] = uuid.uuid4()
     session['tasks'] = rng.sample(range(len(SVGS)), 5)
-    mkdir(f'../data/{session["id"]}') 
+    mkdir(f'{ANNO_BASE}/{session["id"]}') 
+    with open(f'{ANNO_BASE}/{session["id"]}/tasks.txt', 'w+') as fp : 
+        for i in session['tasks'] : 
+            fp.write(SVGS[i] + '\n') 
     with open(f'{app.static_folder}/index.html') as fp :
         content = fp.read()
     resp = make_response(content)
@@ -84,9 +85,9 @@ def validate () :
     resp = requests.post(CAPTCHA_VERIFY, data=payload).json()
     if resp['success'] : 
         id = session['id']
-        with open(f'../data/{id}/email.txt', 'w+') as fp : 
+        with open(f'{ANNO_BASE}/{id}/email.txt', 'w+') as fp : 
             fp.write(email)
-        with open(f'../data/{id}/turkid.txt', 'w+') as fp :
+        with open(f'{ANNO_BASE}/{id}/turkid.txt', 'w+') as fp :
             fp.write(turkid)
     return jsonify(success=resp['success'])
 
@@ -94,7 +95,7 @@ def validate () :
 def logip () :
     id = session['id']
     payload = request.json
-    with open(f'../data/{id}/ip.json', 'w+') as fp: 
+    with open(f'{ANNO_BASE}/{id}/ip.json', 'w+') as fp: 
         json.dump(payload, fp)
     return jsonify(success=True)
 
@@ -117,19 +118,19 @@ def checktutorial () :
     with open('./assets/tutorial.pkl', 'rb') as fp: 
         T = pickle.load(fp) 
     T_ = appGraph2nxGraph(request.json['graph'])
-    with open(f'../data/{id}/tutorialTree.json', 'w+') as fp :
+    with open(f'{ANNO_BASE}/{id}/tutorialTree.json', 'w+') as fp :
         json.dump(request.json, fp)
     score = norm_cted(T, T_)
-    with open(f'../data/{id}/tutscores.txt', 'a+') as fp :
+    with open(f'{ANNO_BASE}/{id}/tutscores.txt', 'a+') as fp :
         fp.write(f'{score}\n')
-    success = score < 0.2
+    success = score < 0.25
     return jsonify(success=success)
 
 @app.route('/survey', methods=['POST', 'GET']) 
 def survey () :
     id = session['id']
     ratings = request.json
-    with open(f'../data/{id}/survey.txt', 'w+') as fp :
+    with open(f'{ANNO_BASE}/{id}/survey.txt', 'w+') as fp :
         for i, r in enumerate(ratings) :
             fp.write(f'{i}, {r}\n')
     return jsonify(success=True)
@@ -139,7 +140,7 @@ def tree () :
     id = session['id']
     payload = request.json
     taskNum = payload['taskNum']
-    with open(f'../data/{id}/treeData{taskNum}.json', 'w+') as fp :
+    with open(f'{ANNO_BASE}/{id}/treeData{taskNum}.json', 'w+') as fp :
         json.dump(payload, fp)
     return jsonify(success=True)
 
@@ -148,20 +149,26 @@ def time () :
     id = session['id'] 
     payload = request.json
     if payload.get('start', False) :
-        with open(f'../data/{id}/startTime.json', 'w+') as fp: 
+        with open(f'{ANNO_BASE}/{id}/startTime.json', 'w+') as fp: 
             json.dump(payload, fp)
-    else : 
-        with open(f'../data/{id}/endTime.json', 'w+') as fp :
+    elif payload.get('end', False) : 
+        with open(f'{ANNO_BASE}/{id}/endTime.json', 'w+') as fp :
             json.dump(payload, fp)
+    elif payload.get('slideId', None) is not None : 
+        with open(f'{ANNO_BASE}/{id}/slideTime.json', 'a+') as fp: 
+            fp.write(json.dumps(payload) + '\n')
     return jsonify(success=True)
 
 @app.route('/comments', methods=['POST', 'GET'])
 def comments () : 
     id = session['id']
     comments = request.json['comments']
-    with open(f'../data/{id}/comments.txt', 'w+') as fp :
+    with open(f'{ANNO_BASE}/{id}/comments.txt', 'w+') as fp :
         fp.write(comments + '\n') 
-    return jsonify(success=True)
+    cid = str(uuid.uuid4())[:6]
+    with open(f'{ANNO_BASE}/{id}/cid.txt', 'w+') as fp :
+        fp.write(cid + '\n')
+    return jsonify(cid=cid, success=True)
 
 if __name__ == '__main__':
     app.run(host='0.0.0.0', port=80)

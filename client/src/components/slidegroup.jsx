@@ -3,19 +3,17 @@ import SlideNav from "./slidenav";
 import Row from "react-bootstrap/Row";
 import Container from "react-bootstrap/Container";
 import PageTransition from "./transition";
+import { postCurrentTime } from "../utils/post";
 
 class SlideGroup extends Component {
   constructor(props) {
     super(props);
-    this.state = { slideId: 0, highlightPrev: false, highlightNext: false };
-  }
-
-  componentDidMount() {
-    document.addEventListener("keydown", this.handleKey);
-  }
-
-  componentWillUnmount() {
-    document.removeEventListener("keydown", this.handleKey);
+    this.state = {
+      slideId: 0,
+      showNext: false,
+      highlightPrev: false,
+      highlightNext: false,
+    };
   }
 
   onPrev = () => {
@@ -29,32 +27,30 @@ class SlideGroup extends Component {
     const nSlides = this.props.children.length;
     this.setState((prevState) => {
       const { slideId } = prevState;
+      postCurrentTime({ slideId });
       return { slideId: Math.min(nSlides - 1, slideId + 1) };
     });
-  };
-
-  handleKey = (e) => {
-    if (e.key === "ArrowRight") {
-      this.onNext();
-    } else if (e.key === "ArrowLeft") {
-      this.onPrev();
-    }
   };
 
   setHighlight = (val) => {
     this.setState({ highlightNext: val });
   };
 
+  setShowNext = (val) => {
+    this.setState({ showNext: val });
+  };
+
   render() {
     const { children } = this.props;
-    const { slideId, highlightPrev, highlightNext } = this.state;
+    const { slideId, highlightPrev, highlightNext, showNext } = this.state;
     return (
-      <Container id="app-container" className="">
+      <Container id="app-container">
         <Row className="slide-content">
           <PageTransition
             page={slideId}
             children={children}
             setHighlight={this.setHighlight}
+            setShowNext={this.setShowNext}
           />
         </Row>
         <Row className="border-top mt-3">
@@ -63,6 +59,7 @@ class SlideGroup extends Component {
             onNext={this.onNext}
             nSlides={children.length}
             slideId={slideId}
+            showNext={showNext}
             highlightPrev={highlightPrev}
             highlightNext={highlightNext}
           />

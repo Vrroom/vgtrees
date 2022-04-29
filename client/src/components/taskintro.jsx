@@ -4,6 +4,18 @@ import Row from "react-bootstrap/Row";
 import ListGroup from "react-bootstrap/ListGroup";
 
 class TaskIntro extends Component {
+  componentDidMount() {
+    const { setHighlight, setShowNext } = this.props;
+    setShowNext(true);
+    setHighlight(true);
+  }
+
+  componentWillUnmount() {
+    const { setHighlight, setShowNext } = this.props;
+    setShowNext(false);
+    setHighlight(false);
+  }
+
   render() {
     return (
       <Row className="py-3 align-items-center">

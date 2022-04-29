@@ -7,14 +7,16 @@ import { postCurrentTime } from "../utils/post";
 
 class Intro extends Component {
   componentDidMount() {
-    const { setHighlight } = this.props;
+    const { setHighlight, setShowNext } = this.props;
+    setShowNext(true); 
     setHighlight(true);
     postCurrentTime({ start: true }); 
   }
 
   componentWillUnmount() {
-    const { setHighlight } = this.props;
+    const { setHighlight, setShowNext } = this.props;
     setHighlight(false);
+    setShowNext(false);
   }
 
   render() {

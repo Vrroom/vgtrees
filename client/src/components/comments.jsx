@@ -10,11 +10,14 @@ import PageTransition from "./transition";
 
 function Comments(props) {
   const [page, setPage] = useState(0);
+  const [cid, setCid] = useState("");
   const postComments = () => {
     const comments = document.getElementById("comments").value;
-    postData("/comments", { comments });
-    postCurrentTime({ end: true }); 
-    setPage(1);
+    postData("/comments", { comments }).then((data) => {
+      setCid(data["cid"]);
+      setPage(1);
+    });
+    postCurrentTime({ end: true });
   };
   return (
     <PageTransition page={page}>
@@ -49,7 +52,7 @@ function Comments(props) {
               <h4>Thanks for completing the study!</h4>
             </ListGroup.Item>
             <ListGroup.Item className="py-2">
-              <h4>We'll be in touch regarding the compensation</h4>
+              <h4>{`Your survey code is - ${cid}`}</h4>
             </ListGroup.Item>
           </ListGroup>
         </Col>

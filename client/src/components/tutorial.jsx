@@ -152,7 +152,8 @@ class Tutorial extends Component {
       } else if (messageId === 14) {
         if (msg.type === "tree-check") {
           if (msg.success) {
-            const { setHighlight } = this.props;
+            const { setHighlight, setShowNext } = this.props;
+            setShowNext(true);
             setHighlight(true);
             return { messageId: 15 };
           } else {
@@ -164,8 +165,9 @@ class Tutorial extends Component {
   };
 
   componentWillUnmount() {
-    const { setHighlight } = this.props;
+    const { setHighlight, setShowNext } = this.props;
     setHighlight(false);
+    setShowNext(false);
     this.callbacks.map((cb) => clearTimeout(cb));
   }
 
