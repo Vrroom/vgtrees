@@ -11,7 +11,7 @@ function ConsentForm(props) {
           <p className="lead">
             You are being asked to participate in a study on visual perception.
           </p>
-          <p> Estimated time: 20 min</p>
+          <p> Estimated time: 10 min</p>
           <h4>Purpose</h4>
           <p>
             This study aims to understand how humans recognize parts in images,
@@ -26,34 +26,35 @@ function ConsentForm(props) {
           <p>The study is divided into three phases.</p>
           <p>
             The first phase is devoted towards ensuring that you understand the
-            goal of this study. We will show you a set of shapes from a graphic
-            and ask you whether the set of shapes form a coherent part of the
-            graphic.
+            goal of this study. You will complete a tutorial. The tutorial will
+            walk you through our annotation interface and teach you how to
+            produce annotations that we are interested in.
           </p>
           <p>
-            In the second phase you will interact with our annotation interface.
-            You will be shown a graphic and the individual shapes that it is
-            composed of. You’ll be asked to group related parts together. You
-            might want to think of it as a bottom-up assembly of a graphic
-            starting from simple shapes. As you are grouping parts, you may be
-            asked to explain your clustering decisions in a few short phrases.
+            In the second phase, you'll use the interface to annotate the
+            graphics given to you. While creating these annotations, keep in
+            mind that we are interested in how you perceive similarity between
+            different parts in a graphic.
           </p>
           <p>
-            Finally, in the third phase, you'll be asked to share your
-            experiences regarding the study. You will assess your performance
-            and report the time taken to complete the study.
+            Finally, in the third phase, you'll be asked to share you
+            experiences. You'll fill out a small questionnaire and an open-ended
+            comments section. Upon completion, you'll be given a survey code
+            which you can enter on the Amazon Mechanical Turk website to confirm
+            your participation.
           </p>
           <h4>Risks</h4>
           <p>
-            We use cookies to correlate session activity. Additionally, we store
-            your MTurk ID and IP Address. This helps us ensure the authenticity
-            of our participants but also exposes you to privacy related risks.
+            We use cookies to correlate session activity. We also store your
+            email ID, MTurk ID and IP Address. This helps us ensure the
+            authenticity of our participants but also exposes you to privacy
+            related risks.
           </p>
           <h4>Benefits</h4>
           <p>
             Participating in this study would be enjoyable if you have an
-            interest in computer graphics and related technologies. You will be
-            compensated monetarily.
+            interest in computer graphics and related technologies. You will
+            also be compensated monetarily.
           </p>
           <h4>Compensation to You</h4>
           <p>Your compensation will be based on:</p>
@@ -66,11 +67,6 @@ function ConsentForm(props) {
               Whether you demonstrated an understanding of the goals of the
               study. We'll judge this based on your responses in the first and
               second phases of the study.
-            </li>
-            <li>
-              Your self-reported study completion times. We'll calculate median
-              study completion times across participants and will guarantee to
-              pay at least US minimum wage for the median completion time.
             </li>
           </ol>
           <h4>Participation Rights</h4>
