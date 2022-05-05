@@ -25,6 +25,7 @@ Session(app)
 # Important globals.
 CAPTCHA_VERIFY = 'https://www.google.com/recaptcha/api/siteverify'
 CAPTCHA_SECRET = os.environ['CAPTCHA_SECRET']
+EMOJI_DATASET = '../../emoji-dataset/interesting'
 DATADIR = '../../vectorrvnn/data/MyAnnotations'
 ANNO_BASE = './data/'
 SVGS = list(filter(
@@ -64,6 +65,23 @@ def root():
         content = fp.read()
     resp = make_response(content)
     return resp
+
+@app.route('/vis') 
+def vis () :
+    with open(f'{app.static_folder}/vis.html') as fp: 
+        content = fp.read()
+    return make_response(content)
+
+@app.route('/emoji-dataset', methods=['POST', 'GET']) 
+def emojiDataset () : 
+    startId = request.json['startId']
+    number = request.json['number']
+    svgFiles = listdir(EMOJI_DATASET)[startId:startId+number]
+    svgs = []
+    for svgFile in svgFiles: 
+        with open(svgFile) as fp : 
+            svgs.append(fp.read())
+    return jsonify(svgs=svgs)
 
 @app.route('/task', methods=['POST', 'GET']) 
 def task () : 

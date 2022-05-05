@@ -1,3 +1,5 @@
+import { isUndef } from "./misc"; 
+
 async function postData(url = '', data = {}) {
   // Default options are marked with *
   const response = await fetch(url, {
@@ -14,6 +16,19 @@ async function postData(url = '', data = {}) {
     body: JSON.stringify(data) // body data type must match "Content-Type" header
   });
   return response.json(); // parses JSON response into native JavaScript objects
+}
+
+async function postN (N=1, url = '', data = []) {
+  const responses = [];
+  for (let i = 0; i < N; i += 1) {
+    let dataPt = data[i];
+    if (isUndef(dataPt)) {
+      dataPt = {};
+    }
+    const res = await postData(url, dataPt); 
+    responses.push(res);
+  }
+  return responses;
 }
 
 function postCurrentTime (data) {
@@ -37,5 +52,6 @@ function postCurrentTime (data) {
 
 export {
   postData, 
+  postN, 
   postCurrentTime
 }; 
