@@ -17,10 +17,6 @@ function Slides(props) {
         <Tutorial />
         <TaskIntro />
         <GroupUI src="task" target="/tree" metadata={{ taskNum: 0 }} />
-        <GroupUI src="task" target="/tree" metadata={{ taskNum: 1 }} />
-        <GroupUI src="task" target="/tree" metadata={{ taskNum: 2 }} />
-        <GroupUI src="task" target="/tree" metadata={{ taskNum: 3 }} />
-        <GroupUI src="task" target="/tree" metadata={{ taskNum: 4 }} />
         <Survey />
         <Comments />
       </SlideGroup>

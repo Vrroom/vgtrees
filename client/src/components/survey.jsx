@@ -8,24 +8,27 @@ import PageTransition from "./transition";
 import { postData } from "../utils/post";
 import { Fireworks } from "fireworks-js/dist/react";
 
+const prompts = [
+  "I found the task easy to complete",
+  "The instructions were clear",
+  "I was attentive while completing the task",
+  "Estimated time for task completion (5 min) was accurate",
+];
+
 class Survey extends Component {
   constructor(props) {
     super(props);
     this.state = { page: 0 };
+    this.promptRefs = prompts.map((p, i) => React.createRef());
   }
 
   postRatings = () => {
     const { setHighlight, setShowNext } = this.props;
-    const ratings = [0, 1, 2, 3].map((qnum) => {
-      const opt = [1, 2, 3, 4, 5].filter((option) => {
-        const radio = document.getElementById(`likert-${qnum}-${option}`);
-        return radio.checked;
-      });
-      if (opt.length > 0) {
-        return opt[0];
-      } else {
-        return "none";
-      }
+    const ratings = prompts.map((question, i) => {
+      return {
+        question,
+        rating: this.promptRefs[i].current.getRating(),
+      };
     });
     postData("/survey", ratings).then(this.setState({ page: 1 }));
     setShowNext(true);
@@ -51,22 +54,13 @@ class Survey extends Component {
           <Col className="d-flex justify-content-center">
             <PageTransition page={page}>
               <ListGroup variant="flush">
-                <ListGroup.Item className="py-2">
-                  <Likert qnum={0}>I found the tasks easy to complete</Likert>
-                </ListGroup.Item>
-                <ListGroup.Item className="py-2">
-                  <Likert qnum={1}>The instructions were clear</Likert>
-                </ListGroup.Item>
-                <ListGroup.Item className="py-2">
-                  <Likert qnum={2}>
-                    I was attentive while completing the task
-                  </Likert>
-                </ListGroup.Item>
-                <ListGroup.Item className="py-2">
-                  <Likert qnum={3}>
-                    Estimated time for task completion was accurate
-                  </Likert>
-                </ListGroup.Item>
+                {prompts.map((q, i) => (
+                  <ListGroup.Item className="py-2">
+                    <Likert ref={this.promptRefs[i]} qnum={i}>
+                      {q}
+                    </Likert>
+                  </ListGroup.Item>
+                ))}
                 <ListGroup.Item className="py-2">
                   <IconButton
                     name="Submit"

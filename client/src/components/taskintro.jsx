@@ -22,7 +22,7 @@ class TaskIntro extends Component {
         <Col className="d-flex justify-content-center">
           <ListGroup variant="flush">
             <ListGroup.Item className="py-4">
-              <h4>Now you have to group 5 images</h4>
+              <h4>Now you have to group 1 image</h4>
             </ListGroup.Item>
             <ListGroup.Item className="py-4">
               <h4>Remember to group only 2-4 objects at a time</h4>

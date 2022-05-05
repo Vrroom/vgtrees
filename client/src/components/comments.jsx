@@ -54,6 +54,9 @@ function Comments(props) {
             <ListGroup.Item className="py-2">
               <h4>{`Your survey code is - ${cid}`}</h4>
             </ListGroup.Item>
+            <ListGroup.Item className="py-2">
+              <h4>We have emailed it to you too</h4>
+            </ListGroup.Item>
           </ListGroup>
         </Col>
         <Col className="d-flex justify-content-center">

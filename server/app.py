@@ -1,4 +1,5 @@
 import os
+import jinja2
 from subprocess import call
 import os.path as osp
 from flask import Flask, jsonify, request, session, make_response
@@ -12,6 +13,9 @@ import svgpathtools as svg
 import uuid
 import json
 from functools import partial
+import smtplib
+from email.mime.multipart import MIMEMultipart
+from email.mime.text import MIMEText
 
 def rootdir():  
     return osp.abspath(osp.dirname(__file__))
@@ -25,9 +29,11 @@ Session(app)
 # Important globals.
 CAPTCHA_VERIFY = 'https://www.google.com/recaptcha/api/siteverify'
 CAPTCHA_SECRET = os.environ['CAPTCHA_SECRET']
+GMAIL_USER_NAME = os.environ['GMAIL_USER_NAME']
+GMAIL_PASSWD = os.environ['GMAIL_PASSWD']
 EMOJI_DATASET = '../../emoji-dataset/interesting'
 DATADIR = '../../vectorrvnn/data/MyAnnotations'
-ANNO_BASE = './data/'
+ANNO_BASE = './try-data/'
 SVGS = list(filter(
     lambda x : x.endswith('svg'), 
     allfiles(DATADIR)
@@ -37,12 +43,22 @@ GROUP_HEURISTICS=[
 ]
 rng.seed(100)
 
+def dumpJson (fileName, payload) : 
+    with open(fileName, 'w+') as fp :
+        json.dump(payload, fp) 
+
+def dumpStr (fileName, payload, mode='a+') : 
+    with open(fileName, mode) as fp: 
+        fp.write(payload + '\n') 
+
 def getGroups (tree) : 
     groups = []
     for heuristic in GROUP_HEURISTICS : 
         groups.extend(heuristic(tree)) 
-    # Some of these groups may overlap. Finding the maximum number 
-    # of non-overlapping groups is NP Complete. 
+    # Some of these groups may overlap. But we can only present 
+    # non-overlapping groups. Finding the maximum number 
+    # of non-overlapping groups is NP Complete. Hence, we'll 
+    # make a simple approximation
     rng.shuffle(groups)
     mark = [False for _ in range(tree.nPaths)]
     selected = []
@@ -53,14 +69,32 @@ def getGroups (tree) :
                 mark[_] = True
     return selected
 
+def sendEmail(to, cid) :
+    msg = MIMEMultipart('alternative')
+    msg['Subject'] = "VGTrees Annotation Survey"
+    msg['From'] = GMAIL_USER_NAME
+    with open('./assets/email_template.html') as fp : 
+        templateStr = fp.read()
+    template = jinja2.Template(templateStr)
+    html = template.render(cid=cid) 
+    msgPart = MIMEText(html, 'html')
+    msg.attach(msgPart)
+    try : 
+        mail = smtplib.SMTP('smtp.gmail.com', 587)
+        mail.starttls()
+        mail.login(GMAIL_USER_NAME, GMAIL_PASSWD)
+        mail.sendmail(GMAIL_USER_NAME, to, msg.as_string())
+        mail.quit()
+    except Exception as e: 
+        print(f'Error - {e}')
+
 @app.route('/')
 def root():  
     session['id'] = uuid.uuid4()
     session['tasks'] = rng.sample(range(len(SVGS)), 5)
     mkdir(f'{ANNO_BASE}/{session["id"]}') 
-    with open(f'{ANNO_BASE}/{session["id"]}/tasks.txt', 'w+') as fp : 
-        for i in session['tasks'] : 
-            fp.write(SVGS[i] + '\n') 
+    for i in session['tasks'] : 
+        dumpStr(f'{ANNO_BASE}/{session["id"]}/tasks.txt', SVGS[i])
     with open(f'{app.static_folder}/index.html') as fp :
         content = fp.read()
     resp = make_response(content)
@@ -103,30 +137,19 @@ def validate () :
     resp = requests.post(CAPTCHA_VERIFY, data=payload).json()
     if resp['success'] : 
         id = session['id']
-        with open(f'{ANNO_BASE}/{id}/email.txt', 'w+') as fp : 
-            fp.write(email)
-        with open(f'{ANNO_BASE}/{id}/turkid.txt', 'w+') as fp :
-            fp.write(turkid)
+        dumpStr(f'{ANNO_BASE}/{id}/email.txt', email)
+        dumpStr(f'{ANNO_BASE}/{id}/turkid.txt', turkid)
     return jsonify(success=resp['success'])
 
 @app.route('/logip', methods=['POST', 'GET']) 
 def logip () :
     id = session['id']
-    payload = request.json
-    with open(f'{ANNO_BASE}/{id}/ip.json', 'w+') as fp: 
-        json.dump(payload, fp)
+    dumpJson(f'{ANNO_BASE}/{id}/ip.json', request.json)
     return jsonify(success=True)
 
 @app.route('/tutorialgraphic', methods=['POST', 'GET'])
 def tutorialgraphic () :
-    with open('./assets/tutorial.pkl', 'rb') as fp: 
-        T = pickle.load(fp) 
-    inFile = '/tmp/in.svg'
-    with open(inFile, 'w+') as fp :
-        fp.write(repr(T.doc))
-    outFile = '/tmp/o.svg'
-    call(['usvg', inFile, outFile])
-    with open(outFile) as fd :
+    with open('./assets/tutorial.svg') as fd :
         svg = fd.read()
     return jsonify(svg=svg, filename='tutorial.svg')
 
@@ -136,30 +159,24 @@ def checktutorial () :
     with open('./assets/tutorial.pkl', 'rb') as fp: 
         T = pickle.load(fp) 
     T_ = appGraph2nxGraph(request.json['graph'])
-    with open(f'{ANNO_BASE}/{id}/tutorialTree.json', 'w+') as fp :
-        json.dump(request.json, fp)
+    assert(len(leaves(T)) == len(leaves(T_)))
+    dumpJson(f'{ANNO_BASE}/{id}/tutorialTree.json', request.json)
     score = norm_cted(T, T_)
-    with open(f'{ANNO_BASE}/{id}/tutscores.txt', 'a+') as fp :
-        fp.write(f'{score}\n')
+    dumpStr(f'{ANNO_BASE}/{id}/tutscores.txt', str(score))
     success = score < 0.25
     return jsonify(success=success)
 
 @app.route('/survey', methods=['POST', 'GET']) 
 def survey () :
     id = session['id']
-    ratings = request.json
-    with open(f'{ANNO_BASE}/{id}/survey.txt', 'w+') as fp :
-        for i, r in enumerate(ratings) :
-            fp.write(f'{i}, {r}\n')
+    dumpJson(f'{ANNO_BASE}/{id}/survey.json', request.json)
     return jsonify(success=True)
 
 @app.route('/tree', methods=['POST', 'GET'])
 def tree () : 
     id = session['id']
-    payload = request.json
-    taskNum = payload['taskNum']
-    with open(f'{ANNO_BASE}/{id}/treeData{taskNum}.json', 'w+') as fp :
-        json.dump(payload, fp)
+    taskNum = request.json['taskNum']
+    dumpJson(f'{ANNO_BASE}/{id}/treeData{taskNum}.json', request.json)
     return jsonify(success=True)
 
 @app.route('/time', methods=['POST', 'GET'])
@@ -167,27 +184,24 @@ def time () :
     id = session['id'] 
     payload = request.json
     if payload.get('start', False) :
-        with open(f'{ANNO_BASE}/{id}/startTime.json', 'w+') as fp: 
-            json.dump(payload, fp)
+        dumpJson(f'{ANNO_BASE}/{id}/startTime.json', payload)
     elif payload.get('end', False) : 
-        with open(f'{ANNO_BASE}/{id}/endTime.json', 'w+') as fp :
-            json.dump(payload, fp)
+        dumpJson(f'{ANNO_BASE}/{id}/endTime.json', payload)
     elif payload.get('slideId', None) is not None : 
-        with open(f'{ANNO_BASE}/{id}/slideTime.json', 'a+') as fp: 
-            fp.write(json.dumps(payload) + '\n')
+        dumpStr(f'{ANNO_BASE}/{id}/slideTime.json', json.dumps(payload))
     return jsonify(success=True)
 
 @app.route('/comments', methods=['POST', 'GET'])
 def comments () : 
     id = session['id']
     comments = request.json['comments']
-    with open(f'{ANNO_BASE}/{id}/comments.txt', 'w+') as fp :
-        fp.write(comments + '\n') 
+    dumpStr(f'{ANNO_BASE}/{id}/comments.txt', comments)
     cid = str(uuid.uuid4())[:6]
-    with open(f'{ANNO_BASE}/{id}/cid.txt', 'w+') as fp :
-        fp.write(cid + '\n')
+    dumpStr(f'{ANNO_BASE}/{id}/cid.txt', cid)
+    with open(f'{ANNO_BASE}/{id}/email.txt') as fp : 
+        email = fp.read().strip()
+    sendEmail(email, cid)
     return jsonify(cid=cid, success=True)
 
 if __name__ == '__main__':
     app.run(host='0.0.0.0', port=80)
-
