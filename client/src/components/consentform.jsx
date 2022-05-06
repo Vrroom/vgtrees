@@ -36,14 +36,13 @@ function ConsentForm(props) {
             In the second phase, you'll use the interface to annotate one image.
             While creating these annotations, keep in mind that we are
             interested in how you perceive similarity between different parts in
-            a image.
+            the image.
           </p>
           <p>
-            Finally, in the third phase, you'll be asked to share you
-            experiences. You'll fill out a small questionnaire and share
-            feedback. Upon completion, you'll be given a survey code which you
-            can enter on the Amazon Mechanical Turk website to confirm your
-            participation.
+            Finally you'll be asked to share you experiences. You'll fill out a
+            small questionnaire and share feedback. Upon completion, you'll be
+            given a survey code which you can enter on the Amazon Mechanical
+            Turk website to confirm your participation.
           </p>
           <h4>Risks</h4>
           <p>
@@ -79,7 +78,7 @@ function ConsentForm(props) {
               closing the browser window.
             </li>
             <li>
-              You may contact us at any time, regarding any inconvenience you
+              You may contact us at any time regarding any inconvenience you
               face.
             </li>
             <li>

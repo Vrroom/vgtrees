@@ -124,6 +124,7 @@ class GroupUI extends Component {
       graphic,
       graph: graph,
       hover: [],
+      history: [],
       selected: [],
       filename,
       svgString,
@@ -279,7 +280,7 @@ class GroupUI extends Component {
   };
 
   handleUndoClick = (event) => {
-    if (skipUndo(this.props)) return;
+    if (skipUndo(this.props) || this.state.selected.length > 0) return;
     this.setState((prevState) => {
       const { history } = prevState; 
       const graph = history.pop(); 

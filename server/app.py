@@ -33,7 +33,8 @@ GMAIL_USER_NAME = os.environ['GMAIL_USER_NAME']
 GMAIL_PASSWD = os.environ['GMAIL_PASSWD']
 EMOJI_DATASET = '../../emoji-dataset/interesting/'
 DATADIR = './assets/tasks/'
-ANNO_BASE = './try-data/'
+ANNO_BASE = './data-screen/'
+NTASKS = 1
 SVGS = list(filter(
     lambda x : x.endswith('svg'), 
     allfiles(DATADIR)
@@ -91,7 +92,7 @@ def sendEmail(to, cid) :
 @app.route('/')
 def root():  
     session['id'] = uuid.uuid4()
-    session['tasks'] = rng.sample(range(len(SVGS)), 5)
+    session['tasks'] = rng.sample(range(len(SVGS)), NTASKS)
     mkdir(f'{ANNO_BASE}/{session["id"]}') 
     for i in session['tasks'] : 
         dumpStr(f'{ANNO_BASE}/{session["id"]}/tasks.txt', SVGS[i])
@@ -198,9 +199,11 @@ def comments () :
     dumpStr(f'{ANNO_BASE}/{id}/comments.txt', comments)
     cid = str(uuid.uuid4())[:6]
     dumpStr(f'{ANNO_BASE}/{id}/cid.txt', cid)
-    with open(f'{ANNO_BASE}/{id}/email.txt') as fp : 
-        email = fp.read().strip()
-    sendEmail(email, cid)
+    try : 
+        with open(f'{ANNO_BASE}/{id}/email.txt') as fp : 
+            email = fp.read().strip()
+        sendEmail(email, cid)
+    except Exception: pass
     return jsonify(cid=cid, success=True)
 
 if __name__ == '__main__':

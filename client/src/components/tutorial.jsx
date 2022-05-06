@@ -131,7 +131,7 @@ class Tutorial extends Component {
           enable: {
             group: true,
             clear: true,
-            nodes: "all",
+            nodes: [2, 5, 9],
           },
         },
         {
@@ -232,7 +232,7 @@ class Tutorial extends Component {
               <h4><Emoji>🎉</Emoji></h4>
               <h4>Now make groups for the mountain and the lake</h4>
               <h4>Remember to group a few parts at a time</h4>
-              <h4>Finally, create one group for the entire image</h4>
+              <h4>Keep this up until you have grouped the entire image</h4>
             </TutorialMessages>
           ),
           enable: {
