@@ -12,6 +12,7 @@ const prompts = [
   "I found the task easy to complete",
   "The instructions were clear",
   "I was attentive while completing the task",
+  "I want to participate in a larger study of this kind", 
   "Estimated time for task completion (5 min) was accurate",
 ];
 

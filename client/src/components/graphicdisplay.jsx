@@ -27,10 +27,10 @@ function coverElement(path, key, props, t) {
   }
   const { onClick } = props;
   let color = "none";
-  if (validHighlight(highlight) && highlight.includes(key)) {
-    color = rgb2string(highlightColor, alphaBlink(t));
-  } else if (selectedId.includes(key)) {
+  if (selectedId.includes(key)) {
     color = rgb2string(selectColor, 1);
+  } else if (validHighlight(highlight) && highlight.includes(key)) {
+    color = rgb2string(highlightColor, alphaBlink(t));
   } else if (hover.includes(key)) {
     color = rgb2string(selectColor, 0.6);
   }

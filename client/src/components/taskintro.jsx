@@ -25,13 +25,13 @@ class TaskIntro extends Component {
               <h4>Now you have to group 1 image</h4>
             </ListGroup.Item>
             <ListGroup.Item className="py-4">
-              <h4>Remember to group only 2-4 objects at a time</h4>
+              <h4>Remember to group only 2-4 parts at a time</h4>
             </ListGroup.Item>
             <ListGroup.Item className="py-4">
               <h4>Consider symmetry and proximity while grouping</h4>
             </ListGroup.Item>
             <ListGroup.Item className="py-4">
-              <h4>When grouping is ambiguous, use your best judgment</h4>
+              <h4>When confused, use your best judgment</h4>
             </ListGroup.Item>
           </ListGroup>
         </Col>

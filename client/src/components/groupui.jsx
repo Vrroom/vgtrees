@@ -28,14 +28,20 @@ function skipClear(props) {
   return !isUndef(disableClear) && disableClear;
 }
 
+function skipUndo (props) {
+  const { disableUndo } = props;
+  return !isUndef(disableUndo) && disableUndo;
+}
+
 function skipGroup(props) {
   const { disableGroup } = props;
   return !isUndef(disableGroup) && disableGroup;
 }
 
-function skipNode(props, nid) {
+function skipNode(props, graph, nid) {
   const { disableNodes } = props;
-  return !isUndef(disableNodes) && disableNodes.includes(nid);
+  const paths = graph.nodes[nid].paths;
+  return !isUndef(disableNodes) && paths.every(i => disableNodes.includes(i));
 }
 
 const HISTORY_LEN = 10;
@@ -216,9 +222,9 @@ class GroupUI extends Component {
    * the event was fired.
    */
   handleClick = (event, id) => {
-    if (skipNode(this.props, id)) return;
     const selected = cloneDeep(this.state.selected);
     const graph = this.state.graph;
+    if (skipNode(this.props, graph, id)) return;
     id = findRoot(id, graph);
     const isSelected = selected.includes(id);
     // Toggle on the basis of whether the node was already selected or not.
@@ -273,12 +279,14 @@ class GroupUI extends Component {
   };
 
   handleUndoClick = (event) => {
+    if (skipUndo(this.props)) return;
     this.setState((prevState) => {
       const { history } = prevState; 
       const graph = history.pop(); 
       this.updateSimulation(graph); 
       return { history, graph };
     }); 
+    this.tryNotifyParent({ type: "undo" });
   }
 
   /*
@@ -294,6 +302,7 @@ class GroupUI extends Component {
     // Add this new graph to the history and 
     // forget stuff if history is too long.
     const oldGraph = cloneDeep(this.state.graph); 
+    const paths = selected.map(i => oldGraph.nodes[i].paths).flat();
     this.setState((prevState) => {
       const { history } = prevState; 
       if (history.length >= HISTORY_LEN) {
@@ -319,7 +328,7 @@ class GroupUI extends Component {
       }
     }
     this.updateSimulation(graph);
-    this.tryNotifyParent({ type: "group", selected });
+    this.tryNotifyParent({ type: "group", selected, paths });
   };
 
   /*
@@ -338,7 +347,7 @@ class GroupUI extends Component {
   };
 
   render() {
-    let { highlightSvg, highlightGroup, highlightGraph } = this.props;
+    let { highlightSvg, highlightGroup, highlightGraph, highlightUndo } = this.props;
     if (this.state.nothingIn) {
       return (
         <Row className="py-3 align-items-center">
@@ -353,6 +362,7 @@ class GroupUI extends Component {
     if (isUndef(highlightSvg)) highlightSvg = [];
     if (isUndef(highlightGraph)) highlightGraph = [];
     if (isUndef(highlightGroup)) highlightGroup = false;
+    if (isUndef(highlightUndo)) highlightUndo = false;
     return (
       <>
         <Row>
@@ -385,7 +395,7 @@ class GroupUI extends Component {
               name="Undo"
               active={this.state.history.length > 0}
               onClick={this.handleUndoClick}
-              highlight={false}
+              highlight={highlightUndo}
             >
               <Undo />
             </IconButton>

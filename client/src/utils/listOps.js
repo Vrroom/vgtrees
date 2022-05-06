@@ -4,7 +4,7 @@
  * @author Sumit Chaturvedi
  */
 
-import { uniqBy } from "lodash";
+import { uniqBy, range } from "lodash";
 import { intersection } from "underscore";
 
 /**
@@ -71,4 +71,8 @@ function identical(list1, list2) {
   return intersection(list1, list2).length === list1.length;
 }
 
-export { uniqTwoTuples, disjoint, identical, isSubset };
+function allBut(len, id) {
+  return range(0, len).filter((i) => i !== id);
+}
+
+export { uniqTwoTuples, disjoint, identical, isSubset, allBut };
