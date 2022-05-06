@@ -145,7 +145,6 @@ class GroupDisplay extends Component {
       onClick,
       onPointerOver,
       onPointerLeave,
-      onNodeDblClick,
       highlight,
     } = this.props;
     const stroke = getStroke(node.id, selected, highlight, this.state.x);
@@ -161,9 +160,6 @@ class GroupDisplay extends Component {
         onClick={addStopPropagation((evt) => onClick(evt, node.id))}
         onPointerOver={addStopPropagation(() => onPointerOver(node.id))}
         onPointerLeave={addStopPropagation(() => onPointerLeave(node.id))}
-        onDoubleClick={addStopPropagation((evt) =>
-          onNodeDblClick(evt, node.id)
-        )}
         opacity={node.visible}
         pointerEvents={node.visible === 1 ? "auto" : "none"}
       >

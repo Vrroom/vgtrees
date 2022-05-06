@@ -18,6 +18,7 @@ import {
 import { nodeColors } from "../utils/palette";
 import * as d3 from "d3";
 import { ReactComponent as Group } from "../icons/group.svg";
+import { ReactComponent as Undo } from "../icons/undo.svg"; 
 import IconButton from "./iconbutton";
 import { isUndef } from "../utils/misc";
 import { postData } from "../utils/post";
@@ -37,6 +38,8 @@ function skipNode(props, nid) {
   return !isUndef(disableNodes) && disableNodes.includes(nid);
 }
 
+const HISTORY_LEN = 10;
+
 class GroupUI extends Component {
   /*
    * Set the initial state of the component.
@@ -55,6 +58,7 @@ class GroupUI extends Component {
     this.state = {
       graphic,
       graph,
+      history: [], 
       hover: [],
       selected: [],
       filename: "",
@@ -268,45 +272,14 @@ class GroupUI extends Component {
     this.setState({ hover: [] });
   };
 
-  /*
-   * Burst the bubble and undo the grouping.
-   *
-   * @param   {Number}  id - Id of the node.
-   */
-  handleNodeDblClick = (event, id) => {
-    this.setState({ selected: [] });
-    let graph = cloneDeep(this.state.graph);
-    if (graph.nodes[id].type === "path") {
-      return;
-    }
-    let children = graph.nodes[id].children;
-    for (let i = 0; i < children.length; i++) {
-      const childId = children[i];
-      graph.nodes[childId].parent = undefined;
-    }
-    graph.links = graph.links.filter(
-      (link) => !(link.source === id || link.target === id)
-    );
-    const idMap = {};
-    graph.nodes = graph.nodes.filter((node) => node.id !== id);
-    graph.nodes.forEach((node, i) => (idMap[node.id] = i));
-    for (let i = 0; i < graph.nodes.length; i++) {
-      let node = graph.nodes[i];
-      node.id = idMap[node.id];
-      if (!isRoot(node.id, graph)) node.parent = idMap[node.parent];
-      for (let j = 0; j < node.children.length; j++) {
-        node.children[j] = idMap[node.children[j]];
-      }
-    }
-    for (let i = 0; i < graph.links.length; i++) {
-      let link = graph.links[i];
-      link.source = idMap[link.source];
-      link.target = idMap[link.target];
-    }
-    graph = updateVisualProperties(graph, this.state.graphic);
-    this.updateSimulation(graph);
-    this.tryNotifyParent({ type: "group-undo" });
-  };
+  handleUndoClick = (event) => {
+    this.setState((prevState) => {
+      const { history } = prevState; 
+      const graph = history.pop(); 
+      this.updateSimulation(graph); 
+      return { history, graph };
+    }); 
+  }
 
   /*
    * Handle click on the group button.
@@ -318,8 +291,19 @@ class GroupUI extends Component {
   handleGroupClick = (event) => {
     if (skipGroup(this.props)) return;
     const selected = [...this.state.selected];
+    // Add this new graph to the history and 
+    // forget stuff if history is too long.
+    const oldGraph = cloneDeep(this.state.graph); 
+    this.setState((prevState) => {
+      const { history } = prevState; 
+      if (history.length >= HISTORY_LEN) {
+        history.splice(0, 1); 
+      }
+      history.push(oldGraph); 
+      return { history }; 
+    }); 
     const graph = updateVisualProperties(
-      groupNodes(this.state.graph, selected),
+      groupNodes(oldGraph, selected),
       this.state.graphic
     );
     if (isTree(graph)) {
@@ -393,9 +377,18 @@ class GroupUI extends Component {
               onClick={this.handleClick}
               onPointerOver={this.handlePointerOver}
               onPointerLeave={this.handlePointerLeave}
-              onNodeDblClick={this.handleNodeDblClick}
               highlight={highlightGraph}
             />
+          </Col>
+          <Col className="col-1 d-flex align-items-center">
+            <IconButton
+              name="Undo"
+              active={this.state.history.length > 0}
+              onClick={this.handleUndoClick}
+              highlight={false}
+            >
+              <Undo />
+            </IconButton>
           </Col>
         </Row>
         <Row>

@@ -31,8 +31,8 @@ CAPTCHA_VERIFY = 'https://www.google.com/recaptcha/api/siteverify'
 CAPTCHA_SECRET = os.environ['CAPTCHA_SECRET']
 GMAIL_USER_NAME = os.environ['GMAIL_USER_NAME']
 GMAIL_PASSWD = os.environ['GMAIL_PASSWD']
-EMOJI_DATASET = '../../emoji-dataset/interesting'
-DATADIR = '../../vectorrvnn/data/MyAnnotations'
+EMOJI_DATASET = '../../emoji-dataset/interesting/'
+DATADIR = './assets/tasks/'
 ANNO_BASE = './try-data/'
 SVGS = list(filter(
     lambda x : x.endswith('svg'), 
