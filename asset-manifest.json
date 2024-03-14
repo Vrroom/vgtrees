@@ -1,0 +1,43 @@
+{
+  "files": {
+    "static/css/0.98036eff.chunk.css": "/segment-anything-comic-ui/static/css/0.98036eff.chunk.css",
+    "static/js/0.bfc12587.chunk.js": "/segment-anything-comic-ui/static/js/0.bfc12587.chunk.js",
+    "static/js/0.bfc12587.chunk.js.map": "/segment-anything-comic-ui/static/js/0.bfc12587.chunk.js.map",
+    "index.css": "/segment-anything-comic-ui/static/css/index.5ff92c5c.chunk.css",
+    "index.js": "/segment-anything-comic-ui/static/js/index.abb9dc33.chunk.js",
+    "index.js.map": "/segment-anything-comic-ui/static/js/index.abb9dc33.chunk.js.map",
+    "runtime-index.js": "/segment-anything-comic-ui/static/js/runtime-index.cb594e2a.js",
+    "runtime-index.js.map": "/segment-anything-comic-ui/static/js/runtime-index.cb594e2a.js.map",
+    "runtime-vis.js": "/segment-anything-comic-ui/static/js/runtime-vis.758b041c.js",
+    "runtime-vis.js.map": "/segment-anything-comic-ui/static/js/runtime-vis.758b041c.js.map",
+    "vis.css": "/segment-anything-comic-ui/static/css/vis.5ff92c5c.chunk.css",
+    "vis.js": "/segment-anything-comic-ui/static/js/vis.3a964fb1.chunk.js",
+    "vis.js.map": "/segment-anything-comic-ui/static/js/vis.3a964fb1.chunk.js.map",
+    "static/js/5.a105782a.chunk.js": "/segment-anything-comic-ui/static/js/5.a105782a.chunk.js",
+    "static/js/5.a105782a.chunk.js.map": "/segment-anything-comic-ui/static/js/5.a105782a.chunk.js.map",
+    "index.html": "/segment-anything-comic-ui/index.html",
+    "precache-manifest.e8510a2caec08baa0081ab8033f755de.js": "/segment-anything-comic-ui/precache-manifest.e8510a2caec08baa0081ab8033f755de.js",
+    "service-worker.js": "/segment-anything-comic-ui/service-worker.js",
+    "static/css/0.98036eff.chunk.css.map": "/segment-anything-comic-ui/static/css/0.98036eff.chunk.css.map",
+    "static/css/index.5ff92c5c.chunk.css.map": "/segment-anything-comic-ui/static/css/index.5ff92c5c.chunk.css.map",
+    "static/css/vis.5ff92c5c.chunk.css.map": "/segment-anything-comic-ui/static/css/vis.5ff92c5c.chunk.css.map",
+    "static/js/0.bfc12587.chunk.js.LICENSE.txt": "/segment-anything-comic-ui/static/js/0.bfc12587.chunk.js.LICENSE.txt",
+    "static/media/contact.b4cd5257.svg": "/segment-anything-comic-ui/static/media/contact.b4cd5257.svg",
+    "static/media/help.40cbd066.svg": "/segment-anything-comic-ui/static/media/help.40cbd066.svg",
+    "static/media/scissors.3874cae0.svg": "/segment-anything-comic-ui/static/media/scissors.3874cae0.svg",
+    "vis.html": "/segment-anything-comic-ui/vis.html"
+  },
+  "entrypoints": [
+    "static/js/runtime-index.cb594e2a.js",
+    "static/css/0.98036eff.chunk.css",
+    "static/js/0.bfc12587.chunk.js",
+    "static/js/5.a105782a.chunk.js",
+    "static/css/index.5ff92c5c.chunk.css",
+    "static/js/index.abb9dc33.chunk.js",
+    "static/js/runtime-vis.758b041c.js",
+    "static/css/0.98036eff.chunk.css",
+    "static/js/0.bfc12587.chunk.js",
+    "static/css/vis.5ff92c5c.chunk.css",
+    "static/js/vis.3a964fb1.chunk.js"
+  ]
+}
